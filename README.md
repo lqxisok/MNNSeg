@@ -9,9 +9,10 @@ MNN Segmentation inference code
 > ```
 
 ## Usage 
-
+```
 mkdir build && cd build
 cmake ..
 make
 ./segmnn <model_path> <image_path>
+```
 
