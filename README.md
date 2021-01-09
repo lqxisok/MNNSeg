@@ -9,6 +9,13 @@ MNN Segmentation inference code
 > ```
 
 ## Usage 
+### Step 1. Build the libMNN.so from the [MNN](https://github.com/alibaba/MNN)
+> Btw, in my implementation, I only build the cpu dynamic library for test the code. So you may adjust the code for fullfill your need.
+
+### Step 2. Place the built `.so` file ubder the lib folder
+
+### Step 3. Build the executable file
+
 ```
 mkdir build && cd build
 cmake ..
