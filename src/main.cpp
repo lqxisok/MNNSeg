@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Interpreter.hpp"
-
+#include <string>
 #include "MNNDefine.h"
 #include "Tensor.hpp"
 #include "ImageProcess.hpp"
@@ -14,16 +14,23 @@
 #include <expr/ExprCreator.hpp>
 #include <opencv2/opencv.hpp>
 using cv::imread;
+using std::string;
 using cv::Mat;
 using namespace cv;
 using namespace MNN;
 using namespace MNN::CV;
+using namespace MNN::Express;
 
-int main(){
+int main(int argc, char **argv){
+    if (argc <= 2) {
+        fprintf(stderr, "Usage: %s <model-name>.mnn <image file>]\n", argv[0]);
+        return 1;
+    }
 
     // Model
-    std::shared_ptr<MNN::Interpreter> ultraface_interpreter;
-    ultraface_interpreter = std::shared_ptr<MNN::Interpreter>(MNN::Interpreter::createFromFile("../pcnet2.mnn"));
+    string mnn_path = argv[1];
+    std::shared_ptr<MNN::Interpreter> interpreter;
+    interpreter = std::shared_ptr<MNN::Interpreter>(MNN::Interpreter::createFromFile(argv[1]));
 
     // config
     MNN::ScheduleConfig config;
@@ -33,15 +40,16 @@ int main(){
     config.backendConfig = &backendConfig;
 
     // Session
-    MNN::Session *ultraface_session = nullptr;
-    ultraface_session = ultraface_interpreter->createSession(config);
+    MNN::Session *session = nullptr;
+    session = interpreter->createSession(config);
 
     // input tensor
     MNN::Tensor *input_tensor = nullptr;
-    input_tensor = ultraface_interpreter->getSessionInput(ultraface_session, nullptr);
+    input_tensor = interpreter->getSessionInput(session, nullptr);
     
     // Image
-    Mat img = imread("../test.jpg");
+    string img_name = argv[2];
+    Mat img = imread(img_name);
     Mat image;
     int w = 1280;
     int h = 720;
@@ -51,8 +59,8 @@ int main(){
 
 
     // Resize Session
-    ultraface_interpreter->resizeTensor(input_tensor, {1, 3, h, w});
-    ultraface_interpreter->resizeSession(ultraface_session);
+    interpreter->resizeTensor(input_tensor, {1, 3, h, w});
+    interpreter->resizeSession(session);
 
     // Process Input
     MNN::CV::ImageProcess::Config imgConfig;
@@ -76,7 +84,7 @@ int main(){
     auto start = std::chrono::steady_clock::now();
 
     // run network
-    ultraface_interpreter->runSession(ultraface_session);
+    interpreter->runSession(session);
 
     // timer
     auto end = std::chrono::steady_clock::now();
@@ -84,7 +92,7 @@ int main(){
     std::cout << "Using " << double(elapsed.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den << "s." << std::endl;
 
     // get the output
-    auto outputTensor = ultraface_interpreter->getSessionOutput(ultraface_session, "output1");
+    auto outputTensor = interpreter->getSessionOutput(session, "output1");
     auto nchwTensor = new MNN::Tensor(outputTensor, MNN::Tensor::CAFFE);
     outputTensor->copyToHostTensor(nchwTensor);
 
@@ -119,8 +127,8 @@ int main(){
     imwrite("./mnnout.png", result);
 
     // Release the interpreter
-    ultraface_interpreter->releaseModel();
-    ultraface_interpreter->releaseSession(ultraface_session);
+    interpreter->releaseModel();
+    interpreter->releaseSession(session);
 
 
 
