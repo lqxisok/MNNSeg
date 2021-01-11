@@ -1,25 +1,3 @@
-#include <iostream>
-#include "Interpreter.hpp"
-#include <string>
-#include "MNNDefine.h"
-#include "Tensor.hpp"
-#include "ImageProcess.hpp"
-#include <algorithm>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <memory>
-#include <chrono>
-#include <expr/Expr.hpp>
-#include <expr/ExprCreator.hpp>
-#include <opencv2/opencv.hpp>
-using cv::imread;
-using std::string;
-using cv::Mat;
-using namespace cv;
-using namespace MNN;
-using namespace MNN::CV;
-
 #include "segmnn.hpp"
 
 int main(int argc, char **argv){
