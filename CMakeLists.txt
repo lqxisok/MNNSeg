@@ -11,5 +11,8 @@ include_directories(
 
 link_directories(lib)
 
-add_executable(segmnn src/main.cpp src/segmnn.cpp)
-target_link_libraries(segmnn MNN ${OpenCV_LIBS})
+add_library(segexp SHARED src/export.cpp  src/segmnn.cpp)
+target_link_libraries(segexp MNN ${OpenCV_LIBS})
+
+add_executable(segmnn src/main.cpp)
+target_link_libraries(segmnn segexp)

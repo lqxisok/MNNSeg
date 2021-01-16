@@ -1,22 +1,15 @@
-#include "segmnn.hpp"
+#include "export.h"
+
 
 int main(int argc, char **argv){
-    if (argc <= 2) {
-        fprintf(stderr, "Usage: %s <model-name>.mnn <image file>]\n", argv[0]);
-        return 1;
-    }
 
-    segmnnsky::pcnetMNN testcase = segmnnsky::pcnetMNN();
-    std::string modelName = argv[1];
-    std::string imgName = argv[2];
-    testcase.initInterpreter(modelName, 4, 720, 1280);
-    testcase.processImage(imgName);
-    testcase.runSession();
-    cv::Mat result = testcase.getOutput();
-
-    cv::imwrite("./mnnout.png", result);
-
-    testcase.releaseSession();
+    initializeModel(4, 720, 1280);
+    processImage();
+    runSession();
+    uchar * out =  (uchar *)getOutput();
+    // I have test the output. It only contains 0 and 100 (the seg label is multiplied by 100 for visualization).
+    // please change the file  `src/segmnn.cpp -> getOutput() -> result.at<uchar>(i, j) = index * 100;`
+    releaseSession();
 
     std::cout << "done" << std::endl;
     return 0;
