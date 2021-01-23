@@ -3,7 +3,6 @@ project(Seg_MNN)
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(OpenCV REQUIRED)
 include_directories(
         include
         src
