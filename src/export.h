@@ -6,7 +6,7 @@
 
 int initializeModel(int numThread, int height, int width);
 
-int processImage();
+int processImage(void * imageData);
 
 int runSession();
 

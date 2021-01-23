@@ -17,7 +17,7 @@ ERR_CODE segmnnsky::pcnetMNN::initInterpreter(std::string modelPath, int numThre
     setW(width);
     
     // resize Session
-    interpreter->resizeTensor(input_tensor, {1, 3, h, w});
+    interpreter->resizeTensor(input_tensor, {1, c, h, w});
     interpreter->resizeSession(session);
     // Image Config
     imgConfig.filterType = MNN::CV::BILINEAR;
@@ -34,7 +34,8 @@ ERR_CODE segmnnsky::pcnetMNN::initInterpreter(std::string modelPath, int numThre
     std::cout << "Initialization Infos: \n" << 
     "Model Path : " << modelPath << "\n" <<
     "Inference Height: " << getH() << "\n" << 
-    "Inference Width: " << getW() << "\n" << std::endl;
+    "Inference Width: " << getW() << "\n" <<
+    "Inference Channel: " << getC() << "\n" <<  std::endl;
     return 1;
 } 
 
@@ -43,20 +44,13 @@ ERR_CODE segmnnsky::pcnetMNN::runSession(){
     return 1;
 }
 
-ERR_CODE segmnnsky::pcnetMNN::processImage(std::string imagePath){
-    cv::Mat img = cv::imread(imagePath);
-    if (img.empty()){
-        std::cout << "Could not load image ... \n" << std::endl;
-        return -1;
-    }
-    cv::resize(img, img, cv::Size(w, h));
-    pretreat->convert(img.data, w, h, img.step[0], input_tensor);
-    return 1;
-}
-
-ERR_CODE segmnnsky::pcnetMNN::processImage(cv::Mat image){
-    cv::resize(image, image, cv::Size(w, h));
-    pretreat->convert(image.data, w, h, image.step[0], input_tensor);
+ERR_CODE segmnnsky::pcnetMNN::processImage(void * data){
+    /*
+        stride need set to the `mat.step[0]`.
+        `mat.step[0]` means w*c
+    */
+    int stride = w * c;
+    pretreat->convert((uchar *)data, w, h, stride, input_tensor);
     return 1;
 }
 
@@ -66,11 +60,14 @@ ERR_CODE segmnnsky::pcnetMNN::releaseSession(){
     return 1;
 }
 
-cv::Mat segmnnsky::pcnetMNN::getOutput(){
+
+ERR_CODE segmnnsky::pcnetMNN::getOutput(){
     // get the output
     auto outputTensor = interpreter->getSessionOutput(session, "output1");
     auto nchwTensor = new MNN::Tensor(outputTensor, MNN::Tensor::CAFFE);
     outputTensor->copyToHostTensor(nchwTensor);
+
+    auto mask = outputTensor->host<float>()[0];
 
 
     auto dims = nchwTensor->shape();
@@ -78,7 +75,6 @@ cv::Mat segmnnsky::pcnetMNN::getOutput(){
     auto width_out = dims[3];
     auto channel_out = dims[1];
 
-    cv::Mat result(height_out, width_out, CV_8U, cv::Scalar(0));
     for (int i = 0; i < height_out; i++)
     {
         for (int j = 0; j < width_out; j++)
@@ -95,11 +91,11 @@ cv::Mat segmnnsky::pcnetMNN::getOutput(){
                 }
                 
             }
-            result.at<uchar>(i, j) = index * 100;
+            outputArray[i][j] = index * 100;
         }
         
     }
-    return result;
+    return 1;
 }
 
 segmnnsky::pcnetMNN::pcnetMNN()

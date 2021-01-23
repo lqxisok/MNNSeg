@@ -1,9 +1,6 @@
 #include "export.h"
-#include <opencv2/opencv.hpp>
 
 segmnnsky::pcnetMNN testcase = segmnnsky::pcnetMNN();
-cv::Mat result;
-
 
 int initializeModel(int numThread, int height, int width){
 
@@ -11,8 +8,8 @@ int initializeModel(int numThread, int height, int width){
     return 1;
 }
 
-int processImage(){
-    testcase.processImage("/root/github/MNNSeg/test.jpg");
+int processImage(void * imageData){
+    testcase.processImage(imageData);
     return 1;
 }
 
@@ -22,10 +19,9 @@ int runSession(){
 }
 
 void * getOutput(){
-    result = testcase.getOutput();
-    cv::imwrite("./mnnout.png", result);
-    void * returnRes = result.data;
-    return returnRes;
+    int out = testcase.getOutput();
+    // return the output void * Ptr
+    return testcase.getOutPtr();
 }
 
 

@@ -7,12 +7,17 @@ find_package(OpenCV REQUIRED)
 include_directories(
         include
         src
+        3rd_party/imageHelper
+        demo
 )
 
 link_directories(lib)
 
-add_library(segexp SHARED src/export.cpp  src/segmnn.cpp)
-target_link_libraries(segexp MNN ${OpenCV_LIBS})
+add_library(segexp SHARED src/segmnn.cpp src/export.cpp)
+target_link_libraries(segexp MNN)
 
 add_executable(segmnn src/main.cpp)
 target_link_libraries(segmnn segexp)
+
+add_executable(imageRotate demo/imageRotate.cpp)
+target_link_libraries(imageRotate segexp)

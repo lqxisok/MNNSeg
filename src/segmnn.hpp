@@ -8,16 +8,14 @@
 #include <memory>
 #include <expr/Expr.hpp>
 #include <expr/ExprCreator.hpp>
-#include <opencv2/opencv.hpp>
 
 #include "Interpreter.hpp"
 #include "MNNDefine.h"
 #include "Tensor.hpp"
 #include "ImageProcess.hpp"
 
-
-
-#define ERR_CODE int
+typedef unsigned char uchar;
+typedef int ERR_CODE;
 
 namespace segmnnsky
 {
@@ -33,21 +31,24 @@ namespace segmnnsky
         std::shared_ptr<MNN::CV::ImageProcess> pretreat = nullptr;
         int w = 1280;
         int h = 720;
+        int c = 3;
+        uchar outputArray[720][1280];
 
     public:
         pcnetMNN();
         ~pcnetMNN();
         ERR_CODE initInterpreter(std::string modelPath, int numThread, int height, int width);
         ERR_CODE runSession();
-        // overload the process Image with a path and a Mat
-        ERR_CODE processImage(std::string imagePath);
-        ERR_CODE processImage(cv::Mat image);
-        cv::Mat getOutput();
+        ERR_CODE processImage(void * data);
+        ERR_CODE getOutput();
         ERR_CODE releaseSession();
         void setH(int height) {h = height;};
         void setW(int width) {w = width;};
+        void setC(int channel) {c = channel;};
         int getH(){return h;};
         int getW(){return w;};
+        int getC(){return c;};
+        void * getOutPtr(){return (void *) outputArray;};
     };
     
     
