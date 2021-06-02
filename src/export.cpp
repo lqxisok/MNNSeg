@@ -4,7 +4,7 @@ segmnnsky::pcnetMNN testcase = segmnnsky::pcnetMNN();
 
 int initializeModel(int numThread, int height, int width){
 
-    testcase.initInterpreter("/root/github/MNNSeg/pcnet2.mnn", 4, 720, 1280);
+    testcase.initInterpreter("G:/code/cpp/MNNSeg/pcnet.mnn", 4, 720, 1280);
     return 1;
 }
 

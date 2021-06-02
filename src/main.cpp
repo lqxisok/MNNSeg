@@ -15,8 +15,8 @@ int main(int argc, char **argv){
 
     // Process the image from a (void *) pointer
     int width, height, channel;
-    string path = "/root/github/MNNSeg/test.jpg";
-    string out_path = "/root/github/MNNSeg/testa.png";
+    string path = "G:/code/cpp/MNNSeg/test.jpg";
+    string out_path = "G:/code/cpp/MNNSeg/testa.png";
     auto inputImage = stbi_load(path.c_str(), &width, &height, &channel, 3);
 
 
