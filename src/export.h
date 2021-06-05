@@ -1,20 +1,28 @@
-#ifndef EXPORT_MNN_H
-#define EXPORT_MNN_H
+#pragma once
 
 #include "segmnn.hpp"
 
+extern "C" __declspec(dllexport)
+unsigned char fun(uchar * image, int w, int h, int channel, int x, int y)
+{
+	return image[x * h * channel + y + 2];
+}
 
-int initializeModel(int numThread, int height, int width);
+extern "C" __declspec(dllexport)
+int initializeModel(const char* path, int numThread, int width, int height, int channel);
 
-int processImage(void * imageData);
+extern "C" __declspec(dllexport)
+int processImage(uchar * imageData);
 
+extern "C" __declspec(dllexport)
 int runSession();
 
-void * getOutput();
+extern "C" __declspec(dllexport)
+int getOutput(uchar * outputArray);
 
+extern "C" __declspec(dllexport)
 int releaseSession();
 
-#endif // EXPORTMNN_H
 
 
 

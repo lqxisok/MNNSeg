@@ -1,29 +1,26 @@
 #include "export.h"
 
+
 segmnnsky::pcnetMNN testcase = segmnnsky::pcnetMNN();
 
-int initializeModel(int numThread, int height, int width){
+int initializeModel(const char * path, int numThread, int width, int height, int channel){
 
-    testcase.initInterpreter("G:/code/cpp/MNNSeg/pcnet.mnn", 4, 720, 1280);
-    return 1;
+    return testcase.initInterpreter(path, numThread, width, height, channel);
 }
 
-int processImage(void * imageData){
-    testcase.processImage(imageData);
-    return 1;
+int processImage(uchar * imageData){
+    return testcase.processImage(imageData);
 }
 
 int runSession(){
-    testcase.runSession();
-    return 1;
+    return testcase.runSession();
 }
 
-void * getOutput(){
-    int out = testcase.getOutput();
+int getOutput(uchar * outputArray){
+    return testcase.getOutput(outputArray);
     // return the output void * Ptr
-    return testcase.getOutPtr();
+    //return testcase.getOutPtr();
 }
-
 
 int releaseSession(){
     testcase.releaseSession();

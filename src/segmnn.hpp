@@ -15,7 +15,6 @@
 #include "ImageProcess.hpp"
 
 typedef unsigned char uchar;
-typedef int ERR_CODE;
 
 namespace segmnnsky
 {
@@ -32,23 +31,24 @@ namespace segmnnsky
         int w = 1280;
         int h = 720;
         int c = 3;
-        uchar outputArray[720][1280];
+        //uchar* outputArray = nullptr;
+        //uchar outputArray[720][1280];
 
     public:
         pcnetMNN();
         ~pcnetMNN();
-        ERR_CODE initInterpreter(std::string modelPath, int numThread, int height, int width);
-        ERR_CODE runSession();
-        ERR_CODE processImage(void * data);
-        ERR_CODE getOutput();
-        ERR_CODE releaseSession();
+        MNN::ErrorCode initInterpreter(std::string modelPath, int numThread, int width, int height, int channel);
+        MNN::ErrorCode runSession();
+        MNN::ErrorCode processImage(uchar * data);
+        MNN::ErrorCode getOutput(uchar * outputArray);
+        MNN::ErrorCode releaseSession();
         void setH(int height) {h = height;};
         void setW(int width) {w = width;};
         void setC(int channel) {c = channel;};
         int getH(){return h;};
         int getW(){return w;};
         int getC(){return c;};
-        void * getOutPtr(){return (void *) outputArray;};
+        //uchar * getOutPtr(){return outputArray;};
     };
     
     
