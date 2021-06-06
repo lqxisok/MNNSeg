@@ -2,26 +2,32 @@
 
 #include "segmnn.hpp"
 
-extern "C" __declspec(dllexport)
-unsigned char fun(uchar * image, int w, int h, int channel, int x, int y)
+//#define WINDOWS
+
+#ifdef WINDOWS
+    #define DLLExport __declspec(dllexport)
+#else
+    #define DLLExport __attribute__(( visibility("default") ))
+#endif
+
+extern "C"
 {
-	return image[x * h * channel + y + 2];
+    DLLExport int fun(int a, int b)
+    {
+        return a+b;
+    }
+
+    DLLExport int initializeModel(const char* path, int numThread, int width, int height, int channel);
+
+    DLLExport int processImage(uchar * imageData);
+
+    DLLExport int runSession();
+
+    DLLExport int getOutput(uchar * outputArray);
+
+    DLLExport int releaseSession();
+
 }
-
-extern "C" __declspec(dllexport)
-int initializeModel(const char* path, int numThread, int width, int height, int channel);
-
-extern "C" __declspec(dllexport)
-int processImage(uchar * imageData);
-
-extern "C" __declspec(dllexport)
-int runSession();
-
-extern "C" __declspec(dllexport)
-int getOutput(uchar * outputArray);
-
-extern "C" __declspec(dllexport)
-int releaseSession();
 
 
 

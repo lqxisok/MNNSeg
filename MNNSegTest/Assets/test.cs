@@ -51,10 +51,10 @@ public class test : MonoBehaviour
         int width = originTex.width;
         int height = originTex.height;
 
-        string path = Application.dataPath + "/Plugins/pcnet.mnn";
+        string path = Application.dataPath + "/Resources/pcnet.mnn";
         initializeModel(path, 4, width, height, 3);
 
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+        #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_IPHONE
             Texture2D flipTex = new Texture2D(width, height, TextureFormat.RGB24, false);
             FlipImage(originTex, flipTex);
             processImage(flipTex.GetRawTextureData());
@@ -71,7 +71,7 @@ public class test : MonoBehaviour
         retTex.LoadRawTextureData(retArray);
         retTex.Apply();
         
-        #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+        #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_IPHONE
             Texture2D flipTex1 = new Texture2D(width, height, TextureFormat.R8, false);
             FlipImage(retTex, flipTex);
             result.GetComponent<Renderer>().material.mainTexture = flipTex;
