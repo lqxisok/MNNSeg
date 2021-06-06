@@ -6,13 +6,13 @@
 #include <algorithm>
 #include <vector>
 #include <memory>
-#include <expr/Expr.hpp>
-#include <expr/ExprCreator.hpp>
+#include <expr/Expr.h>
+#include <expr/ExprCreator.h>
 
-#include "Interpreter.hpp"
+#include "Interpreter.h"
 #include "MNNDefine.h"
-#include "Tensor.hpp"
-#include "ImageProcess.hpp"
+#include "Tensor.h"
+#include "ImageProcess.h"
 
 typedef unsigned char uchar;
 

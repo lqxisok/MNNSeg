@@ -1,5 +1,5 @@
 //
-//  Interpreter.hpp
+//  Interpreter.h
 //  MNN
 //
 //  Created by MNN on 2018/07/23.
@@ -13,9 +13,9 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <ErrorCode.hpp>
+#include <ErrorCode.h>
 #include <MNNForwardType.h>
-#include <Tensor.hpp>
+#include <Tensor.h>
 
 namespace MNN {
 

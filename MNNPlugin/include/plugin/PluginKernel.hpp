@@ -13,7 +13,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <plugin/PluginContext.hpp>
+#include <plugin/PluginContext.h>
 
 namespace MNN {
 namespace plugin {

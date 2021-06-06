@@ -1,4 +1,4 @@
-#include "segmnn.hpp"
+#include "segmnn.h"
 
 MNN::ErrorCode segmnnsky::pcnetMNN::initInterpreter(std::string modelPath, int numThread, int width, int height, int channel){
 

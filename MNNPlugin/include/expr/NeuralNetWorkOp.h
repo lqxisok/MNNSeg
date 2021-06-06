@@ -1,5 +1,5 @@
 //
-//  NeuralNetWorkOp.hpp
+//  NeuralNetWorkOp.h
 //  MNN
 //
 //  Created by MNN on 2019/06/27.

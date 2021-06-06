@@ -1,5 +1,5 @@
 #include "export.h"
-#include "segmnn.hpp"
+#include "segmnn.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION

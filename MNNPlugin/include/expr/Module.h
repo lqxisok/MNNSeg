@@ -1,5 +1,5 @@
 //
-//  Module.hpp
+//  Module.h
 //  MNN
 //
 //  Created by MNN on 2019/11/25.
@@ -12,7 +12,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include <expr/Expr.hpp>
+#include <expr/Expr.h>
 
 namespace MNN {
 namespace Express {

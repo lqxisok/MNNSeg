@@ -1,6 +1,6 @@
 #pragma once
 
-#include "segmnn.hpp"
+#include "segmnn.h"
 
 extern "C" __declspec(dllexport)
 unsigned char fun(uchar * image, int w, int h, int channel, int x, int y)

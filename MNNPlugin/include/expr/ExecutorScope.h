@@ -1,5 +1,5 @@
 //
-//  ExecutorScope.hpp
+//  ExecutorScope.h
 //  MNN
 //
 //  Created by MNN on 2020/10/26.
@@ -9,7 +9,7 @@
 #ifndef MNN_EXPR_EXECUTOR_SCOPE_HPP_
 #define MNN_EXPR_EXECUTOR_SCOPE_HPP_
 
-#include <MNN/expr/Executor.hpp>
+#include <MNN/expr/Executor.h>
 
 namespace MNN {
 namespace Express {

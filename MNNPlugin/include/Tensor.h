@@ -1,5 +1,5 @@
 //
-//  Tensor.hpp
+//  Tensor.h
 //  MNN
 //
 //  Created by MNN on 2018/08/14.

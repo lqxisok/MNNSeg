@@ -1,11 +1,11 @@
 #include <iostream>
-#include <expr/Expr.hpp>
-#include <expr/ExprCreator.hpp>
+#include <expr/Expr.h>
+#include <expr/ExprCreator.h>
 
-#include "Interpreter.hpp"
+#include "Interpreter.h"
 #include "MNNDefine.h"
-#include "Tensor.hpp"
-#include "ImageProcess.hpp"
+#include "Tensor.h"
+#include "ImageProcess.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION

@@ -34,7 +34,7 @@ typedef enum {
     /*Android 8.1's NNAPI, Not Support yet*/
     MNN_FORWARD_NN = 5,
 
-    /*User can use API from Backend.hpp to add or search Backend*/
+    /*User can use API from Backend.h to add or search Backend*/
     MNN_FORWARD_USER_0 = 8,
     MNN_FORWARD_USER_1 = 9,
     MNN_FORWARD_USER_2 = 10,

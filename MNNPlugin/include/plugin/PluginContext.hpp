@@ -12,8 +12,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <Interpreter.hpp> // Backend
-#include <Tensor.hpp>
+#include <Interpreter.h> // Backend
+#include <Tensor.h>
 #include "Tensor_generated.h"
 
 namespace MNN {

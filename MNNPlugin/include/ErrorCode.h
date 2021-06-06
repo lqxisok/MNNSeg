@@ -1,5 +1,5 @@
 //
-//  ErrorCode.hpp
+//  ErrorCode.h
 //  MNN
 //
 //  Created by MNN on 2018/09/18.
