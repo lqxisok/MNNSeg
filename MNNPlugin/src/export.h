@@ -2,7 +2,7 @@
 
 #include "segmnn.hpp"
 
-//#define WINDOWS
+#define WINDOWS
 
 #ifdef WINDOWS
     #define DLLExport __declspec(dllexport)
