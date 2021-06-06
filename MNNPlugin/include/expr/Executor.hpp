@@ -1,5 +1,5 @@
 //
-//  Executor.h
+//  Executor.hpp
 //  MNN
 //
 //  Created by MNN on 2019/07/25.
@@ -7,10 +7,10 @@
 //
 #ifndef Executor_hpp
 #define Executor_hpp
-#include <ErrorCode.h>
-#include <expr/Expr.h>
-#include <Tensor.h>
-#include <Interpreter.h>
+#include <ErrorCode.hpp>
+#include <expr/Expr.hpp>
+#include <Tensor.hpp>
+#include <Interpreter.hpp>
 #include <vector>
 #include <mutex>
 #include <set>

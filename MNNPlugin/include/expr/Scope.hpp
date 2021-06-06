@@ -1,5 +1,5 @@
 //
-//  RuntimeScope.h
+//  RuntimeScope.hpp
 //  MNN
 //
 //  Created by MNN on 2020/10/26.
@@ -14,7 +14,7 @@
 #include <string>
 #include <mutex>
 
-#include <Interpreter.h>
+#include <Interpreter.hpp>
 
 namespace MNN {
 namespace Express {

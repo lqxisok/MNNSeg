@@ -1,5 +1,5 @@
 //
-//  Optimizer.h
+//  Optimizer.hpp
 //  MNN
 //
 //  Created by MNN on 2019/08/20.
@@ -7,7 +7,7 @@
 //
 #ifndef Optimizer_hpp
 #define Optimizer_hpp
-#include <expr/Expr.h>
+#include <expr/Expr.hpp>
 #include <MNNForwardType.h>
 
 namespace MNN {

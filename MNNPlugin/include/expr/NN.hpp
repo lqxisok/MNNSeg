@@ -1,5 +1,5 @@
 //
-//  NN.h
+//  NN.hpp
 //  MNN
 //
 //  Created by MNN on 2019/11/25.
@@ -8,8 +8,8 @@
 
 #ifndef MNN_Train_NN_hpp
 #define MNN_Train_NN_hpp
-#include <expr/ExprCreator.h>
-#include <expr/Module.h>
+#include <expr/ExprCreator.hpp>
+#include <expr/Module.hpp>
 #include <vector>
 namespace MNN {
 namespace Express {

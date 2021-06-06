@@ -1,5 +1,5 @@
 //
-//  ImageProcess.h
+//  ImageProcess.hpp
 //  MNN
 //
 //  Created by MNN on 2018/09/19.
@@ -9,9 +9,9 @@
 #ifndef ImageProcess_hpp
 #define ImageProcess_hpp
 
-#include <ErrorCode.h>
+#include <ErrorCode.hpp>
 #include <Matrix.h>
-#include <Tensor.h>
+#include <Tensor.hpp>
 
 namespace MNN {
 namespace CV {
