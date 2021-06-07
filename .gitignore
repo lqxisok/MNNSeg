@@ -5,3 +5,7 @@ MNNSegTest/Assets/Plugins/iOS
 MNNSegTest/Temp
 UnityBuild
 iOS.meta
+MNNSegTest/Assembly-CSharp-Editor.csproj
+MNNSegTest/Assembly-CSharp.csproj
+MNNSegTest/MNNSegTest.sln
+MNNSegTest/ProjectSettings/ProjectVersion.txt

@@ -323,7 +323,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   background: {fileID: 101076276}
   result: {fileID: 1902932208}
-  frontFacing: 1
+  frontFacing: 0
 --- !u!4 &421502892
 Transform:
   m_ObjectHideFlags: 0
