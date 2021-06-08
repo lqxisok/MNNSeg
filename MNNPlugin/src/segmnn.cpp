@@ -97,6 +97,7 @@ MNN::ErrorCode segmnnsky::pcnetMNN::getOutput(uchar* outputArray){
             outputArray[i * width_out + j] = index * 100;
         }
     }
+    delete nchwTensor;
     return MNN::NO_ERROR;
 }
 
