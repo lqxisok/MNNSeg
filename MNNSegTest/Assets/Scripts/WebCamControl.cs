@@ -83,6 +83,9 @@ using System.Runtime.InteropServices;
 using UnityEngine.UI;
 public class WebCamControl : MonoBehaviour {
 
+    const int width = 1920 / 4;
+    const int height = 1080 / 4;
+
 	private bool camAvailable;
 	private WebCamTexture cameraTexture;
 	private Texture defaultBackground;
@@ -91,6 +94,7 @@ public class WebCamControl : MonoBehaviour {
     public RawImage result;
 	// public AspectRatioFitter fit;
 	public bool frontFacing;
+    public ComputeShader shader;
 	
 	// Use this for initialization
 	IEnumerator Start () {
@@ -109,7 +113,7 @@ public class WebCamControl : MonoBehaviour {
                     var curr = devices[i];
                     if (curr.isFrontFacing == frontFacing)
                     {
-                        cameraTexture = new WebCamTexture(curr.name, Screen.width, Screen.height);
+                        cameraTexture = new WebCamTexture(curr.name, width, width);
                         break;
                     }
                 }	
@@ -120,9 +124,7 @@ public class WebCamControl : MonoBehaviour {
                 cameraTexture.Play (); // Start the camera
                 background.texture = cameraTexture; // Set the texture
 
-                camAvailable = true; // Set the camAvailable for future purposes.
-
-                InitSegment();
+                camAvailable = true && Init(); // Set the camAvailable for future purposes.
             }
 
         }
@@ -215,38 +217,89 @@ public class WebCamControl : MonoBehaviour {
     private Color32Array colorArray;
     private byte[] retArray;
     private Texture2D retTex;
+    private Texture2D flipTex;
+    private RenderTexture rTex;
 
-    void InitSegment()
+
+    bool Init()
     {
-        // TODO use real cam width and height
-        int width = 1920;
-        int height = 1080;
-
-        string path = Application.streamingAssetsPath + "/pcnet.mnn";
-        initializeModel(path, 4, width, height, 3);
-
+        // alloc texture memory
         colorArray = new Color32Array();
         colorArray.colors = new Color32[width * height]; 
         retArray = new byte[width * height];
         retTex = new Texture2D(width, height, TextureFormat.R8, false);
+
+        #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_IPHONE
+        flipTex = new Texture2D(width, height, TextureFormat.RGB24, false);
+        #endif
+
+        rTex = new RenderTexture(width, height, 0);
+        rTex.enableRandomWrite = true;
+        rTex.Create();
+
+        // init segment
+        string path = Application.streamingAssetsPath + "/pcnet.mnn";
+        return initializeModel(path, 4, width, height, 3) == 0;
     }
     void Segment()
     {
-        cameraTexture.GetPixels32(colorArray.colors);
-        processImage(colorArray.byteArray);
+        #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_IPHONE
+            FlipImage(cameraTexture, flipTex);
+            processImage(flipTex.GetRawTextureData());
+        #else
+            cameraTexture.GetPixels32(colorArray.colors);
+            processImage(colorArray.byteArray);
+        #endif
 
         runSession();
 
         getOutput(retArray);
         
+        // retTex.SetPixels32(colorArray.colors);
         retTex.LoadRawTextureData(retArray);
         retTex.Apply();
 
-        result.texture = retTex;
+        #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_IPHONE
+            FlipImage(retTex, rTex);
+            result.texture = rTex;
+        #else
+            result.texture = retTex;
+        #endif
+    }
+
+
+    void FlipImage(Texture2D inputTex, RenderTexture outputTex)
+    {
+        int numThread = 8;
+        int kernelHandle = shader.FindKernel("CSMain");
+
+        shader.SetInt("x", inputTex.width);
+        shader.SetInt("y", inputTex.height);
+        shader.SetTexture(kernelHandle, "Result", outputTex);
+        shader.SetTexture(kernelHandle, "ImageInput", inputTex);
+        shader.Dispatch(kernelHandle, inputTex.width / numThread , inputTex.height / numThread, 1);
+
+    }
+
+    void FlipImage(WebCamTexture inputTex, Texture2D outputTex)
+    {
+        int numThread = 8;
+        int kernelHandle = shader.FindKernel("CSMain");
+
+        shader.SetInt("x", inputTex.width);
+        shader.SetInt("y", inputTex.height);
+        shader.SetTexture(kernelHandle, "Result", rTex);
+        shader.SetTexture(kernelHandle, "ImageInput", inputTex);
+        shader.Dispatch(kernelHandle, inputTex.width / numThread , inputTex.height / numThread, 1);
+
+        RenderTexture.active = rTex;
+        outputTex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
+        outputTex.Apply();
     }
 
     void OnApplicationQuit()
     {
-        releaseSession();
+        if (camAvailable)
+            releaseSession();
     }
 }

@@ -70,8 +70,8 @@ public class test : MonoBehaviour
         
         #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_IPHONE
             Texture2D flipTex1 = new Texture2D(width, height, TextureFormat.R8, false);
-            FlipImage(retTex, flipTex);
-            result.GetComponent<RawImage>().texture = flipTex;
+            FlipImage(retTex, flipTex1);
+            result.GetComponent<RawImage>().texture = flipTex1;
         #else
             result.GetComponent<RawImage>().texture = retTex;
         #endif
