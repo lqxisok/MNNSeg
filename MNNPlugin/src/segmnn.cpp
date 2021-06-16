@@ -29,7 +29,7 @@ MNN::ErrorCode segmnnsky::pcnetMNN::initInterpreter(std::string modelPath, int n
     ::memcpy(imgConfig.mean, mean, sizeof(mean));
     ::memcpy(imgConfig.normal, normals, sizeof(normals));
     imgConfig.sourceFormat = MNN::CV::BGR;
-    imgConfig.destFormat = MNN::CV::RGB;
+    imgConfig.destFormat = MNN::CV::BGR;
     pretreat = std::shared_ptr<MNN::CV::ImageProcess>(MNN::CV::ImageProcess::create(imgConfig));
 
     // print the info
