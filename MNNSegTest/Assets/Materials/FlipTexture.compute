@@ -4,7 +4,7 @@
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> Result;
-Texture2D<float3> ImageInput;
+Texture2D<float4> ImageInput;
 uint x;
 uint y;
 float2 flip;

@@ -1,104 +1,29 @@
-﻿// using UnityEngine;
-// using UnityEngine.UI;
-// using System.Collections;
-
-// public class WebCamControl : MonoBehaviour
-// {
-//     private WebCamTexture webCam;
-//     private GameObject origin;
-//     private GameObject result;
-
-//     IEnumerator Start()
-//     {
-//         yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
-//         if (Application.HasUserAuthorization(UserAuthorization.WebCam))
-//         {   
-//             if (WebCamTexture.devices.Length < 1)
-//                 Debug.Log("Error: camera device not found!");
-//             else
-//             {
-//                 WebCamDevice device = WebCamTexture.devices[0];
-//                 webCam = new WebCamTexture(device.name);
-
-//                 origin = GameObject.Find("origin");
-//                 result = GameObject.Find("result");
-//                 origin.GetComponent<RawImage>().texture = webCam;
-
-//                 webCam.Play();
-//             }
-//         }
-//     }
-
-//     void Update()
-//     {
-//         Rotate();
-//     }
-
-//     void Rotate()
-//     {
-//         origin.transform.rotation = Quaternion.AngleAxis(webCam.videoRotationAngle, -Vector3.forward);
-
-//         var screenAspect = (float)Screen.width / Screen.height;
-//         var webCamAspect = (float)webCam.width / webCam.height;
-
-//         var rot90 = (webCam.videoRotationAngle / 90) % 2 != 0;
-//         if (rot90) webCamAspect = 1.0f / webCamAspect;
-
-//         float sx, sy;
-//         if (webCamAspect < screenAspect)
-//         {
-//             sx = webCamAspect;
-//             sy = 1.0f;
-//         }
-//         else
-//         {
-//             sx = screenAspect;
-//             sy = screenAspect / webCamAspect;
-//         }
-
-//         if (rot90)
-//             origin.transform.localScale = new Vector3(sy, sx, 1);
-//         else
-//             origin.transform.localScale = new Vector3(sx, sy, 1);
-
-//         var mirror = webCam.videoVerticallyMirrored;
-//         // material.mainTextureOffset = new Vector2(0, mirror ? 1 : 0);
-//         // material.mainTextureScale = new Vector2(1, mirror ? -1 : 1);
-//         origin.transform.localScale *= new Vector2(1, mirror ? -1 : 1);
-//     }
-
-//     void OnGUI()
-//     {
-//         var text = "web cam size = " + webCam.width + " x " + webCam.height;
-//         text += "\nrotation = " + webCam.videoRotationAngle;
-//         text += "\nscreen size = " + Screen.width + " x " + Screen.height;
-//         GUI.Label(new Rect(0, 0, Screen.width, Screen.height), text);
-//     }
-// }
-
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
 using UnityEngine.UI;
-public class WebCamControl : MonoBehaviour {
+public class WebCamControlQuad : MonoBehaviour {
 
     const int width = 1920 / 4;
-    const int height = 1080 / 4;
+    const int height = 1440 / 4;
 
 	private bool camAvailable;
 	private WebCamTexture cameraTexture;
-	private Texture defaultBackground;
+    private Material backgroundMaterial;
+    private Material resultMaterial;
 
-	public RawImage background;
-    public RawImage result;
+	public GameObject background;
+    public GameObject result;
 	// public AspectRatioFitter fit;
 	public bool frontFacing;
     public ComputeShader shader;
 	
 	// Use this for initialization
 	IEnumerator Start () {
-		defaultBackground = background.texture;
+
+        backgroundMaterial = background.GetComponent<Renderer>().material;
+        resultMaterial = result.GetComponent<Renderer>().material;
 
         yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
 
@@ -113,7 +38,7 @@ public class WebCamControl : MonoBehaviour {
                     var curr = devices[i];
                     if (curr.isFrontFacing == frontFacing)
                     {
-                        cameraTexture = new WebCamTexture(curr.name, width, width);
+                        cameraTexture = new WebCamTexture(curr.name, width, height);
                         break;
                     }
                 }	
@@ -122,9 +47,9 @@ public class WebCamControl : MonoBehaviour {
             if (cameraTexture != null)
             {
                 cameraTexture.Play (); // Start the camera
-                background.texture = cameraTexture; // Set the texture
+                backgroundMaterial.mainTexture = cameraTexture; // Set the texture
 
-                camAvailable = true && Init(); // Set the camAvailable for future purposes.
+                camAvailable = Init(); // Set the camAvailable for future purposes.
             }
 
         }
@@ -141,41 +66,55 @@ public class WebCamControl : MonoBehaviour {
             Debug.Log("Still waiting frames for correct info ...");
             return;
         }
+        
  
         Rotation();
-
         Segment();
 	}
 
+    Vector2 offset = new Vector2(0, 0);
+    Vector2 offsetMirror = new Vector2(0, 1);
+    Vector2 scale = new Vector2(1, 1);
+    Vector2 scaleMirror = new Vector2(1, -1);
     void Rotation()
     {
-       
-        Debug.Log("screen size = " + Screen.width + " x " + Screen.height);
-        Debug.Log("web cam size = " + cameraTexture.width + " x " + cameraTexture.height);
-        Debug.Log("rotation = " + cameraTexture.videoRotationAngle);
+        // Debug.Log("screen size = " + Screen.width + " x " + Screen.height);
+        // Debug.Log("web cam size = " + cameraTexture.width + " x " + cameraTexture.height);
+        // Debug.Log("rotation = " + cameraTexture.videoRotationAngle);
+
+        background.transform.rotation = Quaternion.AngleAxis(cameraTexture.videoRotationAngle, -Vector3.forward);
 
         float screenAspect = (float)Screen.width / (float)Screen.height;
-        float ratio = (float)cameraTexture.width / (float)cameraTexture.height;
+        float webCamAspect = (float)cameraTexture.width / (float)cameraTexture.height;
 
         var rot90 = (cameraTexture.videoRotationAngle / 90) % 2 != 0;
-        // if (rot90) ratio = 1.0f / ratio;
-        if (rot90)
-            background.rectTransform.localScale = new Vector3(ratio / screenAspect, 1.0f, 1);
+        if (rot90) webCamAspect = 1.0f / webCamAspect;
+
+        float sx, sy;
+        if (webCamAspect < screenAspect)
+        {
+            sx = webCamAspect;
+            sy = 1.0f;
+        }
         else
-            background.rectTransform.localScale = new Vector3(1.0f, screenAspect / ratio, 1);
+        {
+            sx = screenAspect;
+            sy = screenAspect / webCamAspect;
+        }
 
-		float scaleY = cameraTexture.videoVerticallyMirrored ? -1f : 1f; // Find if the camera is mirrored or not
-        background.rectTransform.localScale = new Vector3(background.rectTransform.localScale.x, background.rectTransform.localScale.y * scaleY, 1f); // Swap the mirrored camera
+        if (rot90)
+            background.transform.localScale = new Vector3(sy, sx, 1);
+        else
+            background.transform.localScale = new Vector3(sx, sy, 1);
 
-		int orient = -cameraTexture.videoRotationAngle;
-		background.rectTransform.localEulerAngles = new Vector3(0,0, orient);
+		bool mirror = cameraTexture.videoVerticallyMirrored;
+        
+        backgroundMaterial.mainTextureOffset = mirror ? offsetMirror : offset;
+        backgroundMaterial.mainTextureScale = mirror ? scaleMirror : scale;
 
-        // Debug.Log("scale = " + background.rectTransform.localScale);
+        resultMaterial.mainTextureOffset = mirror ? offsetMirror : offset;
+        resultMaterial.mainTextureScale = mirror ? scaleMirror : scale;
     }
-
-
-
-
 
 
     // for Windows
@@ -252,18 +191,17 @@ public class WebCamControl : MonoBehaviour {
         #endif
 
         runSession();
-
         getOutput(retArray);
-        
-        // retTex.SetPixels32(colorArray.colors);
+    
         retTex.LoadRawTextureData(retArray);
-        retTex.Apply();
+        // retTex.SetPixels32(colorArray.colors);
+        retTex.Apply(false);
 
         #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_IPHONE
             FlipImage(retTex, rTex);
-            result.texture = rTex;
+            resultMaterial.mainTexture = rTex;
         #else
-            result.texture = retTex;
+            resultMaterial.mainTexture = retTex;
         #endif
     }
 
