@@ -82,7 +82,7 @@ public class WebCamControlQuad : MonoBehaviour {
         // Debug.Log("web cam size = " + cameraTexture.width + " x " + cameraTexture.height);
         // Debug.Log("rotation = " + cameraTexture.videoRotationAngle);
 
-        background.transform.rotation = Quaternion.AngleAxis(cameraTexture.videoRotationAngle, -Vector3.forward);
+        background.transform.localRotation = Quaternion.AngleAxis(cameraTexture.videoRotationAngle, -Vector3.forward);
 
         float screenAspect = (float)Screen.width / (float)Screen.height;
         float webCamAspect = (float)cameraTexture.width / (float)cameraTexture.height;
