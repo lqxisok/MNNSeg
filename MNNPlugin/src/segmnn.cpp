@@ -94,7 +94,7 @@ MNN::ErrorCode segmnnsky::pcnetMNN::getOutput(uchar* outputArray){
                     index = c;
                 }
             }
-            outputArray[i * width_out + j] = index * 100;
+            outputArray[i * width_out + j] = index * 255;
         }
     }
     delete nchwTensor;
