@@ -82,19 +82,20 @@ MNN::ErrorCode segmnnsky::pcnetMNN::getOutput(uchar* outputArray){
     for (int i = 0; i < height_out; i++)
     {
         for (int j = 0; j < width_out; j++)
-        {   
+        {
+            auto intputArray = nchwTensor->host<float>();
             int index = 0;
-            float maxvalue=0.0;
-            for (int c = 0; c < channel_out; c++)
-            {   
-                if (c == 0)
+            float maxvalue = intputArray[i * width_out + j];
+            for (int c = 1; c < channel_out; c++)
+            {
+                if (intputArray[i * width_out + j + c * height_out * width_out] > maxvalue)
                 {
-                    maxvalue = nchwTensor->host<float>()[i*width_out + j + c*height_out*width_out];
-                } else if(nchwTensor->host<float>()[i*width_out + j + c*height_out*width_out] > maxvalue){
+                    maxvalue = intputArray[i * width_out + j + c * height_out * width_out];
                     index = c;
                 }
             }
-            outputArray[i * width_out + j] = index * 255;
+            outputArray[i * width_out + j] = (uchar)((maxvalue + index) * 127.5);
+            //outputArray[i * width_out + j] = (uchar)(maxvalue * 255);
         }
     }
     delete nchwTensor;
