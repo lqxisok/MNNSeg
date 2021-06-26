@@ -9,18 +9,23 @@ public class StandaloneControl : MonoBehaviour {
 
     private Material backgroundMaterial;
     private Material resultMaterial;
-    public RenderTexture rtTex;
-    public RenderTexture destnationTex;
+    private RenderTexture rtTex;
+    private RenderTexture destnationTex;
 
 	public GameObject background;
-    public ComputeShader shader;
+    public ComputeShader FlipShader;
+    public ComputeShader FlipAndSplitShader;
     public bool flip = true;
-    public DualKawaseBlur dualKawaseBlur;
+
+    // public DualKawaseBlur dualKawaseBlur;
+
+    public DownSampling downsampling;
 	
 	// Use this for initialization
 	void Start () {
 
         backgroundMaterial = background.GetComponent<Renderer>().material;
+
 
         rtTex = new RenderTexture(width, height, 0);
         rtTex.enableRandomWrite = true;
@@ -29,21 +34,27 @@ public class StandaloneControl : MonoBehaviour {
         destnationTex = new RenderTexture(width, height, 0);
         destnationTex.enableRandomWrite = true;
         destnationTex.Create();
+
         backgroundMaterial.SetTexture("_SegTex", destnationTex);
 
-        SegmentToolkit.Init(width, height, shader);
+        SegmentToolkit.Init(width, height, FlipShader, FlipAndSplitShader);
 
-        dualKawaseBlur.Init(rtTex, destnationTex);
+        // dualKawaseBlur.Init(rtTex, destnationTex);
+
+        downsampling.Init(backgroundMaterial.mainTexture, rtTex, destnationTex);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        SegmentToolkit.Segment(backgroundMaterial.mainTexture, rtTex, flip);
-	}
 
-    // private void OnPreRender() {
-    //     DualKawaseBlur.Render(rtTex, destnationTex);   
-    // }
+        // 1. get segmention image
+        SegmentToolkit.Segment(backgroundMaterial.mainTexture, rtTex, flip);
+
+        // 2. get average color of sky by using rtex.confidence(.y)
+        // in DownSampling.OnRenderImage
+
+        // 3. blur is in DualKawaseBlur.OnRenderImage call back -- destnationTex
+	}
 
     void OnApplicationQuit()
     {

@@ -12,12 +12,17 @@ public class WebCamControlQuad : MonoBehaviour {
     private Material backgroundMaterial;
     private Material resultMaterial;
     private RenderTexture rtTex;
+    private RenderTexture destnationTex;
 
 	public GameObject background;
     public GameObject result;
 	public bool frontFacing;
+    public ComputeShader flipShader;
+    public ComputeShader flipAndSplitShader;
     public bool flip = true;
-    public ComputeShader shader;
+    public DualKawaseBlur dualKawaseBlur;
+    public DownSampling downsampling;
+
 	
 	// Use this for initialization
 	IEnumerator Start () {
@@ -49,12 +54,22 @@ public class WebCamControlQuad : MonoBehaviour {
                 cameraTexture.Play (); // Start the camera
                 backgroundMaterial.mainTexture = cameraTexture; // Set the texture
 
+
                 rtTex = new RenderTexture(width, height, 0);
                 rtTex.enableRandomWrite = true;
                 rtTex.Create();
-                resultMaterial.mainTexture = rtTex;
 
-                systemAvailable = SegmentToolkit.Init(width, height, shader); // Set the systemAvailable for future purposes.
+
+                destnationTex = new RenderTexture(width, height, 0);
+                destnationTex.enableRandomWrite = true;
+                destnationTex.Create();
+                resultMaterial.mainTexture = destnationTex;
+
+                systemAvailable = SegmentToolkit.Init(width, height, flipShader, flipAndSplitShader); // Set the systemAvailable for future purposes.
+                
+                dualKawaseBlur.Init(rtTex, destnationTex);
+
+                downsampling.Init(cameraTexture, rtTex, destnationTex);
             }
 
         }

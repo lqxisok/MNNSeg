@@ -1,0 +1,17 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+Texture2D<float4> ImageInput;
+uint x;
+uint y;
+float2 flip;
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    flip = float2(id.x, y - id.y);
+    float seg = trunc(ImageInput[flip].x * 2);
+    Result[id.xy] = float4(seg, (ImageInput[flip].x - 0.5 * seg) * 2, ImageInput[flip].z, 1.0);
+}

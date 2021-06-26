@@ -37,24 +37,26 @@ public static class SegmentToolkit
     private static int width, height;
     private static bool initialized = false;
 
-    private static ComputeShader shader;
+    private static ComputeShader flipShader;
+    private static ComputeShader flipAndSplitShader;
 
     private static byte[] retArray;
     private static Texture2D retTex;
     private static Texture2D flipTex;
 
-    public static bool Init(int _width, int _height, ComputeShader _shader)
+    public static bool Init(int _width, int _height, ComputeShader _flipShader, ComputeShader _flipAndSplitShader)
     {
         width = _width;
         height = _height;
-        shader = _shader;
+        flipShader = _flipShader;
+        flipAndSplitShader = _flipAndSplitShader;
 
         // alloc texture memory
         retArray = new byte[width * height];
         retTex = new Texture2D(width, height, TextureFormat.R8, false);
         flipTex = new Texture2D(width, height, TextureFormat.RGB24, false);
 
-        string path = Application.streamingAssetsPath + "/pcnet.mnn";
+        string path = Application.streamingAssetsPath + "/pcnet_softmax.mnn";
         initialized = initializeModel(path, 4, width, height, 3) == 0;
 
         return initialized;
@@ -62,7 +64,7 @@ public static class SegmentToolkit
 
     public static void Segment(Texture inputTex, RenderTexture outputTex, bool flip = true)
     {
-        FlipImage(inputTex, outputTex, flip);
+        FlipImage(inputTex, outputTex, flipShader, flip);
         
         RenderTexture.active = outputTex;
         flipTex.ReadPixels(new Rect(0, 0, outputTex.width, outputTex.height), 0, 0);
@@ -77,11 +79,11 @@ public static class SegmentToolkit
         retTex.LoadRawTextureData(retArray);
         retTex.Apply(false);
 
-        FlipImage(retTex, outputTex, flip);
+        FlipImage(retTex, outputTex, flipAndSplitShader, flip);
     }
 
 
-    private static void FlipImage(Texture inputTex, RenderTexture outputTex, bool flip)
+    private static void FlipImage(Texture inputTex, RenderTexture outputTex, ComputeShader shader, bool flip)
     {
         int numThread = 8;
         int kernelHandle = shader.FindKernel("CSMain");

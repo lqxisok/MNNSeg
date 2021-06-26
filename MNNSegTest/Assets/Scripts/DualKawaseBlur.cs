@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DualKawaseBlur : MonoBehaviour
 {
-    struct Level
+    private struct Level
     {
         internal RenderTexture down;
         internal RenderTexture up;
@@ -19,7 +19,7 @@ public class DualKawaseBlur : MonoBehaviour
     [Range(1, 10)]
     public float RTDownScaling = 1.0f;
 
-    private Level[] m_Pyramid;
+    private Level[] pyramid;
 
     private Material material;
 
@@ -42,11 +42,11 @@ public class DualKawaseBlur : MonoBehaviour
         int tw = (int)(inputRT.width / RTDownScaling);
         int th = (int)(inputRT.height / RTDownScaling);
         
-        m_Pyramid = new Level[Iteration];
+        pyramid = new Level[Iteration];
 
         for (int i = 0; i < Iteration; i++)
             {
-                m_Pyramid[i] = new Level
+                pyramid[i] = new Level
                 {
                     down = new RenderTexture(tw, th, 0),
                     up = new RenderTexture(tw, th, 0)
@@ -62,15 +62,15 @@ public class DualKawaseBlur : MonoBehaviour
         RenderTexture lastDown = inputRT;
         for (int i = 0; i < Iteration; i++)
         {
-            Graphics.Blit(lastDown, m_Pyramid[i].down, material, 0);
-            lastDown = m_Pyramid[i].down;
+            Graphics.Blit(lastDown, pyramid[i].down, material, 0);
+            lastDown = pyramid[i].down;
         }
 
-        RenderTexture lastUp =m_Pyramid[Iteration - 1].down;
+        RenderTexture lastUp =pyramid[Iteration - 1].down;
         for (int i = Iteration - 2; i >= 0; i--)
         {
-            Graphics.Blit(lastUp, m_Pyramid[i].up, material, 1);
-            lastUp = m_Pyramid[i].up;
+            Graphics.Blit(lastUp, pyramid[i].up, material, 1);
+            lastUp = pyramid[i].up;
         }
 
         Graphics.Blit(lastUp, outputRT, material, 1);

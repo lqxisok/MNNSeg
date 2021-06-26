@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 23617199}
   - component: {fileID: 23617198}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: Blur Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -148,12 +148,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 23617197}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee89ea0f60f3a9c47ae8100ee1c5d0ce, type: 3}
+  m_Script: {fileID: 11500000, guid: f6252d1b47123c549bcab67ee3ae2f7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BlurRadius: 2
-  Iteration: 3
-  RTDownScaling: 1
+  SampleRadius: 0
 --- !u!20 &23617199
 Camera:
   m_ObjectHideFlags: 0
@@ -205,11 +203,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 23617197}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.40256095, y: 0.13381216, z: 4.052986}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &421502890
 GameObject:
@@ -241,12 +239,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 645c3adf19edd5f4a901fab1d3525f6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rtTex: {fileID: 0}
-  destnationTex: {fileID: 0}
   background: {fileID: 899457680}
-  shader: {fileID: 7200000, guid: 05590041234a65f4d80b919592402619, type: 3}
+  FlipShader: {fileID: 7200000, guid: 05590041234a65f4d80b919592402619, type: 3}
+  FlipAndSplitShader: {fileID: 7200000, guid: e8500eccc23d5814c91615ffb8457470, type: 3}
   flip: 1
-  dualKawaseBlur: {fileID: 23617198}
+  downsampling: {fileID: 23617198}
 --- !u!4 &421502892
 Transform:
   m_ObjectHideFlags: 0
@@ -541,8 +538,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_Father: {fileID: 963194228}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
@@ -614,7 +611,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 899457684}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

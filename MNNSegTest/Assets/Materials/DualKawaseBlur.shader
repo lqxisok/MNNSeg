@@ -58,12 +58,12 @@ Shader "Hidden/DualKawaseBlur"
 		o.vertex = mul (mul(unity_MatrixVP, unity_ObjectToWorld), v.vertex);
 		o.texcoord = v.texcoord;
 		
-		#if UNITY_UV_STARTS_AT_TOP
-			o.texcoord = o.texcoord * float2(1.0, -1.0) + float2(0.0, 1.0);
-		#endif
+		// #if UNITY_UV_STARTS_AT_TOP
+		// 	o.texcoord = o.texcoord * float2(1.0, -1.0) + float2(0.0, 1.0);
+		// #endif
 		float2 uv = TRANSFORM_TEX(o.texcoord, _MainTex);
 		
-		// _MainTex_TexelSize *= 0.5;
+		_MainTex_TexelSize *= 0.5;
 		o.uv = uv;
 		o.uv01.xy = uv - _MainTex_TexelSize * float2(1 + _Offset, 1 + _Offset);//top right
 		o.uv01.zw = uv + _MainTex_TexelSize * float2(1 + _Offset, 1 + _Offset);//bottom left
@@ -93,12 +93,12 @@ Shader "Hidden/DualKawaseBlur"
 		o.vertex = mul (mul(unity_MatrixVP, unity_ObjectToWorld), v.vertex);
 		o.texcoord = v.texcoord;
 		
-		#if UNITY_UV_STARTS_AT_TOP
-			o.texcoord = o.texcoord * float2(1.0, -1.0) + float2(0.0, 1.0);
-		#endif
+		// #if UNITY_UV_STARTS_AT_TOP
+		// 	o.texcoord = o.texcoord * float2(1.0, -1.0) + float2(0.0, 1.0);
+		// #endif
 		float2 uv = TRANSFORM_TEX(o.texcoord, _MainTex);
 		
-		// _MainTex_TexelSize *= 0.5;
+		_MainTex_TexelSize *= 0.5;
 		_Offset = float2(1 + _Offset, 1 + _Offset);
 		
 		o.uv01.xy = uv + float2(-_MainTex_TexelSize.x * 2, 0) * _Offset;

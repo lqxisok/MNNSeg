@@ -94,7 +94,7 @@ MNN::ErrorCode segmnnsky::pcnetMNN::getOutput(uchar* outputArray){
                     index = c;
                 }
             }
-            outputArray[i * width_out + j] = (uchar)((maxvalue + index) * 127.5);
+            outputArray[i * width_out + j] = (uchar)(index * 128 + maxvalue * 127);
             //outputArray[i * width_out + j] = (uchar)(maxvalue * 255);
         }
     }
