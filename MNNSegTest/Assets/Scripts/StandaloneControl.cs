@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
+
+
 public class StandaloneControl : MonoBehaviour {
 
     // TODO: obtain width and height from web camera automatically
-    const int width = 640;
-    const int height = 368;
+    int width = 640;
+    int height = 368;
 
     private Material backgroundMaterial;
     private Material resultMaterial;
@@ -17,15 +20,18 @@ public class StandaloneControl : MonoBehaviour {
     public ComputeShader FlipAndSplitShader;
     public bool flip = true;
 
-    // public DualKawaseBlur dualKawaseBlur;
+    public DualKawaseBlur dualKawaseBlur;
 
     public DownSampling downsampling;
 	
 	// Use this for initialization
 	void Start () {
 
+        VideoPlayer videoPlayer = this.GetComponent<UnityEngine.Video.VideoPlayer>();
+        width = (int)videoPlayer.clip.width;
+        height = (int)videoPlayer.clip.height;
+        
         backgroundMaterial = background.GetComponent<Renderer>().material;
-
 
         rtTex = new RenderTexture(width, height, 0);
         rtTex.enableRandomWrite = true;
@@ -35,13 +41,14 @@ public class StandaloneControl : MonoBehaviour {
         destnationTex.enableRandomWrite = true;
         destnationTex.Create();
 
-        backgroundMaterial.SetTexture("_SegTex", destnationTex);
+        backgroundMaterial.SetTexture("_SegTex", rtTex);
 
         SegmentToolkit.Init(width, height, FlipShader, FlipAndSplitShader);
 
-        // dualKawaseBlur.Init(rtTex, destnationTex);
-
         downsampling.Init(backgroundMaterial.mainTexture, rtTex, destnationTex);
+
+        dualKawaseBlur.Init(destnationTex, rtTex);
+
 	}
 	
 	// Update is called once per frame

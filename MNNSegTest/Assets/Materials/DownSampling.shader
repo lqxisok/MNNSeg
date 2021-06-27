@@ -80,8 +80,8 @@ Shader "Hidden/DownSampling"
 	{
 		half4 col = SAMPLE_TEXTURE2D(_RGBTex, sampler_RGBTex, i.uv);
 		half segment = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).x; // segment [0, 1]
-		half confidence = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).y * 2; // confidence [0, 2]
-		col *= segment * confidence;
+		// half confidence = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).y; // confidence [0, 1]
+		col *= segment;
 		col.w = segment; // final alpha is used for counting sky pixels. average(sky) = average(texture) / alpha. I have already proved that.
 		return col;
 	}
@@ -104,12 +104,23 @@ Shader "Hidden/DownSampling"
 		half segment = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).x; // segment [0, 1]
 		half confidence = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).y; // confidence
 
-		half flag = ColorDistance(col, average.xyz) < 1.5;
-		half result = segment;
-		if (segment + flag < 1.5 && segment + flag > 0.5 && confidence < 0.85)
-			result = 1 - segment;
-		return half4(result * confidence, 0, 0, 1);
+		half flag = ColorDistance(col, average.xyz) < 0.3;
+		half bconf = confidence > 0.98;
+
+		half result = 0;
+
+			 if (segment == 1 && flag == 1 && bconf == 0) result = 1;
+		else if (segment == 1 && flag == 0 && bconf == 0) result = confidence;
+		else if (segment == 1 && flag == 1 && bconf == 1) result = 1;
+		else if (segment == 1 && flag == 0 && bconf == 1) result = 1;
+		else if (segment == 0 && flag == 1 && bconf == 0) result =  (1 - confidence * 0.2);
+		else if (segment == 0 && flag == 0 && bconf == 0) result = 0;
+		else if (segment == 0 && flag == 1 && bconf == 1) result = 0;
+		// else if (segment == 0 && flag == 0 && bconf == 1) result = 0;
+
+		return half4(result, 0, 0, 1);
 		// return half4(average.xyz, 1.0);
+		
 	}
 	
 	v2f_DownSample Vert_DownSample(appdata v)
