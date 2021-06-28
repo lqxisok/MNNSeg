@@ -4,31 +4,28 @@ using UnityEngine;
 public class WebCamControlQuad : MonoBehaviour {
 
     // TODO: obtain width and height from web camera automatically
-    const int width = 1920 / 4;
-    const int height = 1440 / 4;
+    private int width = 1920;
+    private int height = 1440;
 
 	private bool systemAvailable = false;
 	private WebCamTexture cameraTexture;
     private Material backgroundMaterial;
-    private Material resultMaterial;
-    private RenderTexture rtTex;
     private RenderTexture destnationTex;
 
+    [Range(1, 4)]
+    public int downScale = 2;
 	public GameObject background;
-    public GameObject result;
 	public bool frontFacing;
-    public ComputeShader flipShader;
-    public ComputeShader flipAndSplitShader;
+    public ComputeShader FlipShader;
+    public ComputeShader FlipAndSplitShader;
     public bool flip = true;
-    public DualKawaseBlur dualKawaseBlur;
-    public DownSampling downsampling;
 
+    public Camera postCam;
 	
 	// Use this for initialization
 	IEnumerator Start () {
 
         backgroundMaterial = background.GetComponent<Renderer>().material;
-        resultMaterial = result.GetComponent<Renderer>().material;
 
         yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
 
@@ -54,22 +51,20 @@ public class WebCamControlQuad : MonoBehaviour {
                 cameraTexture.Play (); // Start the camera
                 backgroundMaterial.mainTexture = cameraTexture; // Set the texture
 
-
-                rtTex = new RenderTexture(width, height, 0);
-                rtTex.enableRandomWrite = true;
-                rtTex.Create();
-
-
+                width /= downScale;
+                height /= downScale;
+                
                 destnationTex = new RenderTexture(width, height, 0);
                 destnationTex.enableRandomWrite = true;
                 destnationTex.Create();
-                resultMaterial.mainTexture = destnationTex;
 
-                systemAvailable = SegmentToolkit.Init(width, height, flipShader, flipAndSplitShader); // Set the systemAvailable for future purposes.
-                
-                dualKawaseBlur.Init(rtTex, destnationTex);
+                backgroundMaterial.SetTexture("_SegTex", destnationTex);
+                postCam.targetTexture = destnationTex;
 
-                downsampling.Init(cameraTexture, rtTex, destnationTex);
+                systemAvailable = postCam.GetComponent<SegmentToolkit>().Init(width, height, backgroundMaterial.mainTexture, FlipShader, FlipAndSplitShader);
+                postCam.GetComponent<DownSampling>().Init(width, height, backgroundMaterial.mainTexture);
+                postCam.GetComponent<DualKawaseBlur>().Init(width, height);
+
             }
 
         }
@@ -88,7 +83,6 @@ public class WebCamControlQuad : MonoBehaviour {
         }
         
         Rotation();
-        SegmentToolkit.Segment(cameraTexture, rtTex, flip);
 	}
 
     Vector2 offset = new Vector2(0, 0);
@@ -130,14 +124,5 @@ public class WebCamControlQuad : MonoBehaviour {
         
         backgroundMaterial.mainTextureOffset = mirror ? offsetMirror : offset;
         backgroundMaterial.mainTextureScale = mirror ? scaleMirror : scale;
-
-        resultMaterial.mainTextureOffset = mirror ? offsetMirror : offset;
-        resultMaterial.mainTextureScale = mirror ? scaleMirror : scale;
-    }
-
-    void OnApplicationQuit()
-    {
-        if (systemAvailable)
-            SegmentToolkit.ReleaseSession();
     }
 }

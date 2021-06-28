@@ -51,7 +51,7 @@
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
-                col.w = 1.0 - tex2D(_SegTex, i.uv).x;
+                col.w = 1.0 - tex2D(_SegTex, i.uv).x * 0.8;
 
                 // fixed4 col = tex2D(_SegTex, i.uv);
 

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.48173994, g: 0.56552434, b: 0.85453594, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -131,6 +131,7 @@ GameObject:
   m_Component:
   - component: {fileID: 23617200}
   - component: {fileID: 23617199}
+  - component: {fileID: 23617202}
   - component: {fileID: 23617198}
   - component: {fileID: 23617201}
   m_Layer: 0
@@ -222,9 +223,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee89ea0f60f3a9c47ae8100ee1c5d0ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BlurRadius: 0
-  Iteration: 1
+  BlurRadius: 0.2
+  Iteration: 3
   RTDownScaling: 1
+--- !u!114 &23617202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 23617197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf4d156980b59654fb341b0415a53435, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &421502890
 GameObject:
   m_ObjectHideFlags: 0
@@ -255,12 +268,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 645c3adf19edd5f4a901fab1d3525f6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  downScale: 2
   background: {fileID: 899457680}
   FlipShader: {fileID: 7200000, guid: 05590041234a65f4d80b919592402619, type: 3}
   FlipAndSplitShader: {fileID: 7200000, guid: e8500eccc23d5814c91615ffb8457470, type: 3}
   flip: 1
-  dualKawaseBlur: {fileID: 23617201}
-  downsampling: {fileID: 23617198}
+  postCam: {fileID: 23617199}
 --- !u!4 &421502892
 Transform:
   m_ObjectHideFlags: 0
@@ -283,11 +296,11 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 421502890}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: db2755b24a9377641ae8b12ed9f4f804, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: bcdcc6d638a5739499269f8f0dd209b7, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
-  m_TargetTexture: {fileID: 8400000, guid: ba7a0de5add7b5940ad5aaa98af0d7a7, type: 2}
+  m_TargetTexture: {fileID: 0}
   m_TimeReference: 0
   m_TargetMaterialRenderer: {fileID: 899457682}
   m_TargetMaterialProperty: _MainTex
@@ -296,14 +309,12 @@ VideoPlayer:
   m_DataSource: 0
   m_PlaybackSpeed: 1
   m_AudioOutputMode: 0
-  m_TargetAudioSources:
-  - {fileID: 0}
-  m_DirectAudioVolumes:
-  - 1
+  m_TargetAudioSources: []
+  m_DirectAudioVolumes: []
   m_Url: 
-  m_EnabledAudioTracks: 01
-  m_DirectAudioMutes: 00
-  m_ControlledAudioTrackCount: 1
+  m_EnabledAudioTracks: 
+  m_DirectAudioMutes: 
+  m_ControlledAudioTrackCount: 0
   m_PlayOnAwake: 1
   m_SkipOnDrop: 1
   m_Looping: 1
@@ -602,7 +613,7 @@ Camera:
     height: 1
   near clip plane: 0.01
   far clip plane: 10
-  field of view: 35.978268
+  field of view: 35.989563
   orthographic: 0
   orthographic size: 0.5
   m_Depth: -1

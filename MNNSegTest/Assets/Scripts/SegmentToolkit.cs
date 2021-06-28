@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 
 
-public static class SegmentToolkit
+public class SegmentToolkit : MonoBehaviour
 {
     #region c_entry
 
@@ -34,20 +34,27 @@ public static class SegmentToolkit
 
     #endregion
 
-    private static int width, height;
-    private static bool initialized = false;
+    private int width, height;
+    private bool initialized = false;
 
-    private static ComputeShader flipShader;
-    private static ComputeShader flipAndSplitShader;
+    private ComputeShader flipShader;
+    private ComputeShader flipAndSplitShader;
 
-    private static byte[] retArray;
-    private static Texture2D retTex;
-    private static Texture2D flipTex;
+    private byte[] retArray;
+    private Texture2D retTex;
+    private Texture2D flipTex;
+    private Rect rect;
 
-    public static bool Init(int _width, int _height, ComputeShader _flipShader, ComputeShader _flipAndSplitShader)
+    private RenderTexture tmpResizeRT;
+    private RenderTexture tmpResultRT;
+
+    private Texture inputRGB;
+
+    public bool Init(int _width, int _height, Texture _inputRGB, ComputeShader _flipShader, ComputeShader _flipAndSplitShader)
     {
         width = _width;
         height = _height;
+        inputRGB = _inputRGB;
         flipShader = _flipShader;
         flipAndSplitShader = _flipAndSplitShader;
 
@@ -56,18 +63,29 @@ public static class SegmentToolkit
         retTex = new Texture2D(width, height, TextureFormat.R8, false);
         flipTex = new Texture2D(width, height, TextureFormat.RGB24, false);
 
+
+        tmpResizeRT = new RenderTexture(width, height, 0);
+        tmpResizeRT.enableRandomWrite = true;
+        tmpResizeRT.Create();
+
+        tmpResultRT = new RenderTexture(width, height, 0);
+        tmpResultRT.enableRandomWrite = true;
+        tmpResultRT.Create();
+
+        rect = new Rect(0, 0, width, height);
+
         string path = Application.streamingAssetsPath + "/pcnet_softmax.mnn";
         initialized = initializeModel(path, 4, width, height, 3) == 0;
 
         return initialized;
     }
 
-    public static void Segment(Texture inputTex, RenderTexture outputTex, bool flip = true)
+    private void Segment(Texture inputTex, RenderTexture outputTex, bool flip = true)
     {
         FlipImage(inputTex, outputTex, flipShader, flip);
         
         RenderTexture.active = outputTex;
-        flipTex.ReadPixels(new Rect(0, 0, outputTex.width, outputTex.height), 0, 0);
+        flipTex.ReadPixels(rect, 0, 0);
         flipTex.Apply(false);
         RenderTexture.active = null;
 
@@ -95,7 +113,16 @@ public static class SegmentToolkit
         shader.Dispatch(kernelHandle, inputTex.width / numThread , inputTex.height / numThread, 1);
     }
 
-    public static void ReleaseSession()
+    private void OnRenderImage(RenderTexture source, RenderTexture destination)
+    {
+        // resize
+        Graphics.Blit(inputRGB, tmpResizeRT);
+        // segment
+        Segment(tmpResizeRT, tmpResultRT, true);
+        Graphics.Blit(tmpResultRT, destination);
+    }
+
+    void OnApplicationQuit()
     {
         if (initialized)
             releaseSession();

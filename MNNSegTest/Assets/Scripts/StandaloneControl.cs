@@ -7,64 +7,60 @@ using UnityEngine.Video;
 public class StandaloneControl : MonoBehaviour {
 
     // TODO: obtain width and height from web camera automatically
-    int width = 640;
-    int height = 368;
+    private int width = 640;
+    private int height = 368;
 
     private Material backgroundMaterial;
-    private Material resultMaterial;
-    private RenderTexture rtTex;
     private RenderTexture destnationTex;
+    private RenderTexture videoRT;
 
+    [Range(1, 4)]
+    public int downScale = 2;
 	public GameObject background;
     public ComputeShader FlipShader;
     public ComputeShader FlipAndSplitShader;
     public bool flip = true;
 
-    public DualKawaseBlur dualKawaseBlur;
-
-    public DownSampling downsampling;
+    public Camera postCam;
 	
 	// Use this for initialization
 	void Start () {
 
         VideoPlayer videoPlayer = this.GetComponent<UnityEngine.Video.VideoPlayer>();
-        width = (int)videoPlayer.clip.width;
-        height = (int)videoPlayer.clip.height;
+        videoRT = new RenderTexture((int)videoPlayer.clip.width, (int)videoPlayer.clip.height, 0);
+        videoPlayer.targetTexture = videoRT;
+
+        width = (int)videoPlayer.clip.width / downScale;
+        height = (int)videoPlayer.clip.height / downScale;
         
         backgroundMaterial = background.GetComponent<Renderer>().material;
 
-        rtTex = new RenderTexture(width, height, 0);
-        rtTex.enableRandomWrite = true;
-        rtTex.Create();
-
         destnationTex = new RenderTexture(width, height, 0);
-        destnationTex.enableRandomWrite = true;
-        destnationTex.Create();
+        // destnationTex.enableRandomWrite = true;
+        // destnationTex.Create();
 
-        backgroundMaterial.SetTexture("_SegTex", rtTex);
+        backgroundMaterial.mainTexture = videoRT;
+        backgroundMaterial.SetTexture("_SegTex", destnationTex);
+        postCam.targetTexture = destnationTex;
 
-        SegmentToolkit.Init(width, height, FlipShader, FlipAndSplitShader);
-
-        downsampling.Init(backgroundMaterial.mainTexture, rtTex, destnationTex);
-
-        dualKawaseBlur.Init(destnationTex, rtTex);
+        postCam.GetComponent<SegmentToolkit>().Init(width, height, backgroundMaterial.mainTexture, FlipShader, FlipAndSplitShader);
+        postCam.GetComponent<DownSampling>().Init(width, height, backgroundMaterial.mainTexture);
+        postCam.GetComponent<DualKawaseBlur>().Init(width, height);
 
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	// void Update () {
 
         // 1. get segmention image
-        SegmentToolkit.Segment(backgroundMaterial.mainTexture, rtTex, flip);
+        // SegmentToolkit.Segment(backgroundMaterial.mainTexture, rtTex, flip);
 
-        // 2. get average color of sky by using rtex.confidence(.y)
+        // 2. get average color of sky by using rtex.confidence(.y), and refine segment result
         // in DownSampling.OnRenderImage
 
-        // 3. blur is in DualKawaseBlur.OnRenderImage call back -- destnationTex
-	}
+        // 3. blur
+        // in DualKawaseBlur.OnRenderImage
+	// }
 
-    void OnApplicationQuit()
-    {
-        SegmentToolkit.ReleaseSession();
-    }
+
 }

@@ -25,7 +25,7 @@ public class DualKawaseBlur : MonoBehaviour
 
     private RenderTexture inputRT, outputRT;
 
-    public void Init(RenderTexture _input, RenderTexture _output)
+    public void Init(int _width, int _height)
     {
         Shader shader = Shader.Find("Hidden/DualKawaseBlur");
 
@@ -33,14 +33,8 @@ public class DualKawaseBlur : MonoBehaviour
         material.hideFlags = HideFlags.HideAndDontSave;
         material.SetFloat(Shader.PropertyToID("_Offset"), BlurRadius);
 
-
-        inputRT = _input;
-        outputRT = _output;
-
-        this.GetComponent<Camera>().targetTexture = outputRT;
-
-        int tw = (int)(inputRT.width / RTDownScaling);
-        int th = (int)(inputRT.height / RTDownScaling);
+        int tw = (int)(_width / RTDownScaling);
+        int th = (int)(_height / RTDownScaling);
         
         pyramid = new Level[Iteration];
 
@@ -59,13 +53,14 @@ public class DualKawaseBlur : MonoBehaviour
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         // Downsample
-        RenderTexture lastDown = inputRT;
+        RenderTexture lastDown = source;
         for (int i = 0; i < Iteration; i++)
         {
             Graphics.Blit(lastDown, pyramid[i].down, material, 0);
             lastDown = pyramid[i].down;
         }
 
+        // Upsample
         RenderTexture lastUp =pyramid[Iteration - 1].down;
         for (int i = Iteration - 2; i >= 0; i--)
         {
@@ -73,7 +68,8 @@ public class DualKawaseBlur : MonoBehaviour
             lastUp = pyramid[i].up;
         }
 
-        Graphics.Blit(lastUp, outputRT, material, 1);
+        // put out blur result
+        Graphics.Blit(lastUp, destination, material, 1);
     }
 
 }

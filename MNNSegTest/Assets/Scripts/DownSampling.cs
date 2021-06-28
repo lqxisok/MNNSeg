@@ -19,30 +19,19 @@ public class DownSampling : MonoBehaviour
 
     private Material material;
 
-    private Texture inputRGB;
-    private RenderTexture inputSegRT, outputRT;
-
     private RenderTexture skyColorRT;
 
-    public void Init(Texture _inputRGB, RenderTexture _inputSeg, RenderTexture _output)
+    public void Init(int _width, int _height, Texture _inputRGB)
     {
-        inputRGB = _inputRGB;
-        inputSegRT = _inputSeg;
-        outputRT = _output;
-
         Shader shader = Shader.Find("Hidden/DownSampling");
 
         material = new Material(shader);
         material.hideFlags = HideFlags.HideAndDontSave;
         material.SetFloat(Shader.PropertyToID("_Offset"), SampleRadius);
-        material.SetTexture(Shader.PropertyToID("_RGBTex"), inputRGB);
+        material.SetTexture(Shader.PropertyToID("_RGBTex"), _inputRGB);
 
-        this.GetComponent<Camera>().targetTexture = outputRT;
-
-        int tw = inputSegRT.width;
-        int th = inputSegRT.height;
-
-        skyColorRT = new RenderTexture(tw, th, 0);
+        int tw = _width;
+        int th = _height;
 
         iteration = Mathf.CeilToInt(Mathf.Log(Mathf.Max(tw, th), 2));
         pyramid = new RenderTexture[iteration];
@@ -59,10 +48,10 @@ public class DownSampling : MonoBehaviour
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         // Blend
-        Graphics.Blit(inputSegRT, skyColorRT, material, 0);
+        Graphics.Blit(source, skyColorRT, material, 0);
         // Graphics.Blit(skyColorRT, outputRT);
 
-        // Downsample
+        // Downsample to find average sky color
         RenderTexture lastDown = skyColorRT;
         for (int i = 0; i < iteration; i++)
         {
@@ -70,7 +59,8 @@ public class DownSampling : MonoBehaviour
             lastDown = pyramid[i];
         }
 
-        Graphics.Blit(inputSegRT, outputRT, material, 2);
+        // refine sky segment result
+        Graphics.Blit(source, destination, material, 2);
     }
 
 }
