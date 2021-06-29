@@ -20,6 +20,7 @@ public class DownSampling : MonoBehaviour
     private Material material;
 
     private RenderTexture skyColorRT;
+    private bool initialized = false;
 
     public void Init(int _width, int _height, Texture _inputRGB)
     {
@@ -43,10 +44,14 @@ public class DownSampling : MonoBehaviour
                 th = Mathf.Max(th / 2, 1);
             }
         material.SetTexture(Shader.PropertyToID("_AverageTex"), pyramid[iteration - 1]);
+        
+        initialized = true;
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
+        if (!initialized)
+            return;
         // Blend
         Graphics.Blit(source, skyColorRT, material, 0);
         // Graphics.Blit(skyColorRT, outputRT);

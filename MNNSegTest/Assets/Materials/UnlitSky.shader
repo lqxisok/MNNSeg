@@ -2,13 +2,13 @@
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
-        _SegTex ("Texture", 2D) = "white" {}
+        _MainTex ("MainTex", 2D) = "white" {}
     }
     SubShader
     {
         Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
         LOD 100
+        Cull Off
 
         ZWrite Off
         Blend SrcAlpha OneMinusSrcAlpha
@@ -36,9 +36,6 @@
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            sampler2D _SegTex;
-            float4 _SegTex_ST;
-
             v2f vert (appdata v)
             {
                 v2f o;
@@ -51,7 +48,7 @@
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
-                col.w = 1.0 - tex2D(_SegTex, i.uv).x * 0.8;
+                col.w = (col.x + col.y + col.z) / 3.0;
 
                 // fixed4 col = tex2D(_SegTex, i.uv);
 

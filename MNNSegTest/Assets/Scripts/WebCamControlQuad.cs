@@ -55,14 +55,12 @@ public class WebCamControlQuad : MonoBehaviour {
                 height /= downScale;
                 
                 destnationTex = new RenderTexture(width, height, 0);
-                destnationTex.enableRandomWrite = true;
-                destnationTex.Create();
 
                 backgroundMaterial.SetTexture("_SegTex", destnationTex);
                 postCam.targetTexture = destnationTex;
 
-                systemAvailable = postCam.GetComponent<SegmentToolkit>().Init(width, height, backgroundMaterial.mainTexture, FlipShader, FlipAndSplitShader);
-                postCam.GetComponent<DownSampling>().Init(width, height, backgroundMaterial.mainTexture);
+                systemAvailable = postCam.GetComponent<SegmentToolkit>().Init(width, height, cameraTexture, FlipShader, FlipAndSplitShader);
+                postCam.GetComponent<DownSampling>().Init(width, height, cameraTexture);
                 postCam.GetComponent<DualKawaseBlur>().Init(width, height);
 
             }

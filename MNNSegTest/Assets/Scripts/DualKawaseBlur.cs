@@ -22,9 +22,8 @@ public class DualKawaseBlur : MonoBehaviour
     private Level[] pyramid;
 
     private Material material;
-
-    private RenderTexture inputRT, outputRT;
-
+    
+    private bool initialized = false;
     public void Init(int _width, int _height)
     {
         Shader shader = Shader.Find("Hidden/DualKawaseBlur");
@@ -48,10 +47,15 @@ public class DualKawaseBlur : MonoBehaviour
                 tw = Mathf.Max(tw / 2, 1);
                 th = Mathf.Max(th / 2, 1);
             }
+            
+        initialized = true;
     }
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
+        if (!initialized)
+            return;
+
         // Downsample
         RenderTexture lastDown = source;
         for (int i = 0; i < Iteration; i++)

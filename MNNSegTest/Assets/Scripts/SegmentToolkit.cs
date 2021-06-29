@@ -115,6 +115,9 @@ public class SegmentToolkit : MonoBehaviour
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
+        if (!initialized)
+            return;
+            
         // resize
         Graphics.Blit(inputRGB, tmpResizeRT);
         // segment
