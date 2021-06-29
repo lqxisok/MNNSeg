@@ -1,71 +1,57 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
-public class DownSampling : MonoBehaviour
+public static class DownSampling
 {
-    // private struct Level
-    // {
-    //     internal RenderTexture down;
-    //     internal  up;
-    // }
-
-    [Range(0.0f, 15.0f)]
-    public float SampleRadius = 0.0f;
-
-    private RenderTexture[] pyramid;
-
-    private int iteration;
-
-    private Material material;
-
-    private RenderTexture skyColorRT;
-    private bool initialized = false;
-
-    public void Init(int _width, int _height, Texture _inputRGB)
+    public static void Setup(int _width, int _height, CommandBuffer cb, Texture videoTex, Texture segTex, int downSamplingResultTexID)
     {
         Shader shader = Shader.Find("Hidden/DownSampling");
 
-        material = new Material(shader);
+        Material material = new Material(shader);
         material.hideFlags = HideFlags.HideAndDontSave;
-        material.SetFloat(Shader.PropertyToID("_Offset"), SampleRadius);
-        material.SetTexture(Shader.PropertyToID("_RGBTex"), _inputRGB);
+        
+        material.SetFloat(Shader.PropertyToID("_Offset"), 1.0f);
+        material.SetTexture(Shader.PropertyToID("_RGBTex"), videoTex);
 
         int tw = _width;
         int th = _height;
 
-        iteration = Mathf.CeilToInt(Mathf.Log(Mathf.Max(tw, th), 2));
-        pyramid = new RenderTexture[iteration];
-        for (int i = 0; i < iteration; i++)
-            {
-                pyramid[i] = new RenderTexture(tw, th, 0);
+        int iteration = Mathf.CeilToInt(Mathf.Log(Mathf.Max(tw, th), 2));
 
-                tw = Mathf.Max(tw / 2, 1);
-                th = Mathf.Max(th / 2, 1);
-            }
-        material.SetTexture(Shader.PropertyToID("_AverageTex"), pyramid[iteration - 1]);
-        
-        initialized = true;
-    }
-
-    private void OnRenderImage(RenderTexture source, RenderTexture destination)
-    {
-        if (!initialized)
-            return;
         // Blend
-        Graphics.Blit(source, skyColorRT, material, 0);
-        // Graphics.Blit(skyColorRT, outputRT);
+        int blendTexID = Shader.PropertyToID("_BlendTex");
+        cb.GetTemporaryRT(blendTexID, tw, th, 0, FilterMode.Bilinear);
+        cb.Blit(segTex, blendTexID, material, 0);
 
         // Downsample to find average sky color
-        RenderTexture lastDown = skyColorRT;
+        int[] m_Pyramid = new int[iteration];
         for (int i = 0; i < iteration; i++)
         {
-            Graphics.Blit(lastDown, pyramid[i], material, 1);
-            lastDown = pyramid[i];
+            m_Pyramid[i] = Shader.PropertyToID("_AverageDown" + i);
+        }
+        int lastDown = blendTexID;
+        for (int i = 0; i < iteration; i++)
+        {
+            cb.GetTemporaryRT(m_Pyramid[i], tw, th, 0, FilterMode.Bilinear);
+            cb.Blit(lastDown, m_Pyramid[i], material, 1);
+            lastDown = m_Pyramid[i];
+
+            tw = Mathf.Max(tw / 2, 1);
+            th = Mathf.Max(th / 2, 1);
         }
 
-        // refine sky segment result
-        Graphics.Blit(source, destination, material, 2);
+        // Refine sky segment result
+        cb.SetGlobalTexture("_AverageTex", lastDown);
+        cb.Blit(segTex, downSamplingResultTexID, material, 2);
+
+        // Cleanup
+        for (int i = 0; i < iteration; i++)
+        {
+            cb.ReleaseTemporaryRT(m_Pyramid[i]);
+        }
+        cb.ReleaseTemporaryRT(blendTexID);
     }
 
 }

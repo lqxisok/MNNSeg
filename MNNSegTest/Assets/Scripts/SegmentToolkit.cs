@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
 
-
-public class SegmentToolkit : MonoBehaviour
+public static class SegmentToolkit
 {
     #region c_entry
 
@@ -34,72 +33,36 @@ public class SegmentToolkit : MonoBehaviour
 
     #endregion
 
-    private int width, height;
-    private bool initialized = false;
+    private static ComputeShader flipShader;
+    private static ComputeShader flipAndSplitShader;
 
-    private ComputeShader flipShader;
-    private ComputeShader flipAndSplitShader;
+    private static byte[] retArray;
+    private static Texture2D retTex;
 
-    private byte[] retArray;
-    private Texture2D retTex;
-    private Texture2D flipTex;
-    private Rect rect;
-
-    private RenderTexture tmpResizeRT;
-    private RenderTexture tmpResultRT;
-
-    private Texture inputRGB;
-
-    public bool Init(int _width, int _height, Texture _inputRGB, ComputeShader _flipShader, ComputeShader _flipAndSplitShader)
+    public static bool Init(int _width, int _height, ComputeShader _flipShader, ComputeShader _flipAndSplitShader)
     {
-        width = _width;
-        height = _height;
-        inputRGB = _inputRGB;
         flipShader = _flipShader;
         flipAndSplitShader = _flipAndSplitShader;
 
         // alloc texture memory
-        retArray = new byte[width * height];
-        retTex = new Texture2D(width, height, TextureFormat.R8, false);
-        flipTex = new Texture2D(width, height, TextureFormat.RGB24, false);
-
-
-        tmpResizeRT = new RenderTexture(width, height, 0);
-        tmpResizeRT.enableRandomWrite = true;
-        tmpResizeRT.Create();
-
-        tmpResultRT = new RenderTexture(width, height, 0);
-        tmpResultRT.enableRandomWrite = true;
-        tmpResultRT.Create();
-
-        rect = new Rect(0, 0, width, height);
+        retArray = new byte[_width * _height];
+        retTex = new Texture2D(_width, _height, TextureFormat.R8, false);
 
         string path = Application.streamingAssetsPath + "/pcnet_softmax.mnn";
-        initialized = initializeModel(path, 4, width, height, 3) == 0;
-
-        return initialized;
+        return initializeModel(path, 4, _width, _height, 3) == 0;
     }
 
-    private void Segment(Texture inputTex, RenderTexture outputTex, bool flip = true)
+    public static void Segment(Texture2D inputTex, RenderTexture outputTex, bool flip = true)
     {
-        FlipImage(inputTex, outputTex, flipShader, flip);
-        
-        RenderTexture.active = outputTex;
-        flipTex.ReadPixels(rect, 0, 0);
-        flipTex.Apply(false);
-        RenderTexture.active = null;
-
-        processImage(flipTex.GetRawTextureData());
-
+        processImage(inputTex.GetRawTextureData());
         runSession();
         getOutput(retArray);
-    
+
         retTex.LoadRawTextureData(retArray);
         retTex.Apply(false);
 
         FlipImage(retTex, outputTex, flipAndSplitShader, flip);
     }
-
 
     private static void FlipImage(Texture inputTex, RenderTexture outputTex, ComputeShader shader, bool flip)
     {
@@ -113,22 +76,8 @@ public class SegmentToolkit : MonoBehaviour
         shader.Dispatch(kernelHandle, inputTex.width / numThread , inputTex.height / numThread, 1);
     }
 
-    private void OnRenderImage(RenderTexture source, RenderTexture destination)
+    static void ReleaseSession()
     {
-        if (!initialized)
-            return;
-            
-        // resize
-        Graphics.Blit(inputRGB, tmpResizeRT);
-        // segment
-        Segment(tmpResizeRT, tmpResultRT, true);
-        Graphics.Blit(tmpResultRT, destination);
+        releaseSession();
     }
-
-    void OnApplicationQuit()
-    {
-        if (initialized)
-            releaseSession();
-    }
-
 }
