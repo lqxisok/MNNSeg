@@ -1,79 +1,68 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Rendering;
 
-public class DualKawaseBlur : MonoBehaviour
+public static class DualKawaseBlur
 {
     private struct Level
     {
-        internal RenderTexture down;
-        internal RenderTexture up;
+        internal int down;
+        internal int up;
     }
 
-    [Range(0.0f, 15.0f)]
-    public float BlurRadius = 2.0f;
-
-    [Range(1.0f, 10.0f)]
-    public int Iteration = 3;
-
-    [Range(1, 10)]
-    public float RTDownScaling = 1.0f;
-
-    private Level[] pyramid;
-
-    private Material material;
-    
-    private bool initialized = false;
-    public void Init(int _width, int _height)
+    public static void Setup(int _width, int _height, CommandBuffer _cb, int _inputTexID, int _outputTexID, float _blurRadius, int _iteration, float _downScaling)
     {
         Shader shader = Shader.Find("Hidden/DualKawaseBlur");
 
-        material = new Material(shader);
+        Material material = new Material(shader);
         material.hideFlags = HideFlags.HideAndDontSave;
-        material.SetFloat(Shader.PropertyToID("_Offset"), BlurRadius);
+        material.SetFloat(Shader.PropertyToID("_Offset"), _blurRadius);
 
-        int tw = (int)(_width / RTDownScaling);
-        int th = (int)(_height / RTDownScaling);
-        
-        pyramid = new Level[Iteration];
+        int tw = (int)(_width / _downScaling);
+        int th = (int)(_height / _downScaling);
 
-        for (int i = 0; i < Iteration; i++)
+        Level[] m_pyramid = new Level[_iteration];
+        for (int i = 0; i < _iteration; i++)
+        {
+            m_pyramid[i] = new Level
             {
-                pyramid[i] = new Level
-                {
-                    down = new RenderTexture(tw, th, 0),
-                    up = new RenderTexture(tw, th, 0)
-                };
-                tw = Mathf.Max(tw / 2, 1);
-                th = Mathf.Max(th / 2, 1);
-            }
-            
-        initialized = true;
-    }
-
-    private void OnRenderImage(RenderTexture source, RenderTexture destination)
-    {
-        if (!initialized)
-            return;
+                down = Shader.PropertyToID("_BlurDown" + i),
+                up = Shader.PropertyToID("_BlurUp" + i)
+            };
+        }
 
         // Downsample
-        RenderTexture lastDown = source;
-        for (int i = 0; i < Iteration; i++)
+        int lastDown = _inputTexID;
+        for (int i = 0; i < _iteration; i++)
         {
-            Graphics.Blit(lastDown, pyramid[i].down, material, 0);
-            lastDown = pyramid[i].down;
+            int mipDown = m_pyramid[i].down;
+            int mipUp = m_pyramid[i].up;
+            _cb.GetTemporaryRT(mipDown, tw, th, 0, FilterMode.Bilinear);
+            _cb.GetTemporaryRT(mipUp, tw, th, 0, FilterMode.Bilinear);
+            _cb.Blit(lastDown, mipDown, material, 0);
+
+            lastDown = mipDown;
+            tw = Mathf.Max(tw / 2, 1);
+            th = Mathf.Max(th / 2, 1);
         }
 
         // Upsample
-        RenderTexture lastUp =pyramid[Iteration - 1].down;
-        for (int i = Iteration - 2; i >= 0; i--)
+        int lastUp = lastDown;
+        for (int i = _iteration - 2; i >= 0; i--)
         {
-            Graphics.Blit(lastUp, pyramid[i].up, material, 1);
-            lastUp = pyramid[i].up;
+            int mipUp = m_pyramid[i].up;
+
+            _cb.Blit(lastUp, mipUp, material, 1);
+            lastUp = mipUp;
         }
 
-        // put out blur result
-        Graphics.Blit(lastUp, destination, material, 1);
-    }
+        // Cleanup
+        // Render blurred texture in blend pass
+        _cb.Blit(lastUp, _outputTexID, material, 1);
 
+        for (int i = 0; i < _iteration; i++)
+        {
+            _cb.ReleaseTemporaryRT(m_pyramid[i].down);
+            _cb.ReleaseTemporaryRT(m_pyramid[i].up);
+        }
+    }
 }

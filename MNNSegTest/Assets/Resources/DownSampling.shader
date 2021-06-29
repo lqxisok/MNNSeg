@@ -109,14 +109,19 @@ Shader "Hidden/DownSampling"
 
 		half result = 0;
 
-			 if (segment == 1 && flag == 1 && bconf == 0) result = 1;
-		else if (segment == 1 && flag == 0 && bconf == 0) result = confidence;
-		else if (segment == 1 && flag == 1 && bconf == 1) result = 1;
-		else if (segment == 1 && flag == 0 && bconf == 1) result = 1;
-		else if (segment == 0 && flag == 1 && bconf == 0) result =  (1 - confidence * 0.2);
-		else if (segment == 0 && flag == 0 && bconf == 0) result = 0;
-		else if (segment == 0 && flag == 1 && bconf == 1) result = 0;
+		//	 if (segment == 1 && flag == 1 && bconf == 0) result = 1;
+		//else if (segment == 1 && flag == 0 && bconf == 0) result = confidence;
+		//else if (segment == 1 && flag == 1 && bconf == 1) result = 1;
+		//else if (segment == 1 && flag == 0 && bconf == 1) result = 1;
+		//else if (segment == 0 && flag == 1 && bconf == 0) result =  (1 - confidence * 0.2);
+		//else if (segment == 0 && flag == 0 && bconf == 0) result = 0;
+		//else if (segment == 0 && flag == 1 && bconf == 1) result = 0;
 		// else if (segment == 0 && flag == 0 && bconf == 1) result = 0;
+
+		if (segment == 1 && flag == 1) result = 1;
+		else if (segment == 1 && flag == 0 && bconf == 0) result = confidence;
+		else if (segment == 1 && flag == 0 && bconf == 1) result = 1;
+		else if (segment == 0 && flag == 1 && bconf == 0) result = (1 - confidence * 0.2);
 
 		return half4(result, 0, 0, 1);
 		// return half4(average.xyz, 1.0);

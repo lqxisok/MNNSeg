@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 public static class DownSampling
 {
-    public static void Setup(int _width, int _height, CommandBuffer cb, Texture videoTex, Texture segTex, int downSamplingResultTexID)
+    public static void Setup(CommandBuffer _cb, Texture _videoTex, Texture _segTex, int _downSamplingResultTexID)
     {
         Shader shader = Shader.Find("Hidden/DownSampling");
 
@@ -13,45 +11,46 @@ public static class DownSampling
         material.hideFlags = HideFlags.HideAndDontSave;
         
         material.SetFloat(Shader.PropertyToID("_Offset"), 1.0f);
-        material.SetTexture(Shader.PropertyToID("_RGBTex"), videoTex);
+        material.SetTexture(Shader.PropertyToID("_RGBTex"), _videoTex);
 
-        int tw = _width;
-        int th = _height;
+        int tw = _segTex.width;
+        int th = _segTex.height;
 
         int iteration = Mathf.CeilToInt(Mathf.Log(Mathf.Max(tw, th), 2));
 
         // Blend
         int blendTexID = Shader.PropertyToID("_BlendTex");
-        cb.GetTemporaryRT(blendTexID, tw, th, 0, FilterMode.Bilinear);
-        cb.Blit(segTex, blendTexID, material, 0);
+        _cb.GetTemporaryRT(blendTexID, tw, th, 0, FilterMode.Bilinear);
+        _cb.Blit(_segTex, blendTexID, material, 0);
 
         // Downsample to find average sky color
-        int[] m_Pyramid = new int[iteration];
+        int[] m_pyramid = new int[iteration];
         for (int i = 0; i < iteration; i++)
         {
-            m_Pyramid[i] = Shader.PropertyToID("_AverageDown" + i);
+            m_pyramid[i] = Shader.PropertyToID("_AverageDown" + i);
         }
+
         int lastDown = blendTexID;
         for (int i = 0; i < iteration; i++)
         {
-            cb.GetTemporaryRT(m_Pyramid[i], tw, th, 0, FilterMode.Bilinear);
-            cb.Blit(lastDown, m_Pyramid[i], material, 1);
-            lastDown = m_Pyramid[i];
+            _cb.GetTemporaryRT(m_pyramid[i], tw, th, 0, FilterMode.Bilinear);
+            _cb.Blit(lastDown, m_pyramid[i], material, 1);
+            lastDown = m_pyramid[i];
 
             tw = Mathf.Max(tw / 2, 1);
             th = Mathf.Max(th / 2, 1);
         }
 
         // Refine sky segment result
-        cb.SetGlobalTexture("_AverageTex", lastDown);
-        cb.Blit(segTex, downSamplingResultTexID, material, 2);
+        _cb.SetGlobalTexture("_AverageTex", lastDown);
+        _cb.Blit(_segTex, _downSamplingResultTexID, material, 2);
 
         // Cleanup
         for (int i = 0; i < iteration; i++)
         {
-            cb.ReleaseTemporaryRT(m_Pyramid[i]);
+            _cb.ReleaseTemporaryRT(m_pyramid[i]);
         }
-        cb.ReleaseTemporaryRT(blendTexID);
+        _cb.ReleaseTemporaryRT(blendTexID);
     }
 
 }

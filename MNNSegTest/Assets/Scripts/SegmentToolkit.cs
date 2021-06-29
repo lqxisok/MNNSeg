@@ -38,6 +38,8 @@ public static class SegmentToolkit
 
     private static byte[] retArray;
     private static Texture2D retTex;
+    private static Texture2D flipTex;
+    private static Rect rect;
 
     public static bool Init(int _width, int _height, ComputeShader _flipShader, ComputeShader _flipAndSplitShader)
     {
@@ -48,8 +50,32 @@ public static class SegmentToolkit
         retArray = new byte[_width * _height];
         retTex = new Texture2D(_width, _height, TextureFormat.R8, false);
 
+        flipTex = new Texture2D(_width, _height, TextureFormat.RGB24, false);
+
+        rect = new Rect(0, 0, _width, _height);
+
         string path = Application.streamingAssetsPath + "/pcnet_softmax.mnn";
         return initializeModel(path, 4, _width, _height, 3) == 0;
+    }
+
+    public static void Segment(RenderTexture inputTex, RenderTexture outputTex, bool flip = true)
+    {
+        FlipImage(inputTex, outputTex, flipShader, flip);
+
+        RenderTexture.active = outputTex;
+        flipTex.ReadPixels(rect, 0, 0);
+        flipTex.Apply(false);
+        RenderTexture.active = null;
+
+        processImage(flipTex.GetRawTextureData());
+
+        runSession();
+        getOutput(retArray);
+
+        retTex.LoadRawTextureData(retArray);
+        retTex.Apply(false);
+
+        FlipImage(retTex, outputTex, flipAndSplitShader, flip);
     }
 
     public static void Segment(Texture2D inputTex, RenderTexture outputTex, bool flip = true)
@@ -76,7 +102,7 @@ public static class SegmentToolkit
         shader.Dispatch(kernelHandle, inputTex.width / numThread , inputTex.height / numThread, 1);
     }
 
-    static void ReleaseSession()
+    public static void ReleaseSession()
     {
         releaseSession();
     }

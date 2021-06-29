@@ -131,8 +131,6 @@ GameObject:
   m_Component:
   - component: {fileID: 23617200}
   - component: {fileID: 23617199}
-  - component: {fileID: 23617202}
-  - component: {fileID: 23617198}
   - component: {fileID: 23617201}
   m_Layer: 0
   m_Name: Blur Camera
@@ -141,19 +139,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &23617198
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 23617197}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6252d1b47123c549bcab67ee3ae2f7b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SampleRadius: 0
 --- !u!20 &23617199
 Camera:
   m_ObjectHideFlags: 0
@@ -223,21 +208,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee89ea0f60f3a9c47ae8100ee1c5d0ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BlurRadius: 0.2
+  BlurRadius: 2
   Iteration: 3
   RTDownScaling: 1
---- !u!114 &23617202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 23617197}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf4d156980b59654fb341b0415a53435, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &421502890
 GameObject:
   m_ObjectHideFlags: 0
