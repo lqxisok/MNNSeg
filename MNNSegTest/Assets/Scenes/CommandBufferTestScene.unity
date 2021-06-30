@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.5880499, g: 0.75081784, b: 0.96230394, a: 1}
+  m_IndirectSpecularColor: {r: 0.5879436, g: 0.7506108, b: 0.96228045, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -211,7 +211,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1229959125}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: db2755b24a9377641ae8b12ed9f4f804, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: 72aae44e8c62ded47b08bb2796d07ca4, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -224,14 +224,12 @@ VideoPlayer:
   m_DataSource: 0
   m_PlaybackSpeed: 1
   m_AudioOutputMode: 0
-  m_TargetAudioSources:
-  - {fileID: 0}
-  m_DirectAudioVolumes:
-  - 1
+  m_TargetAudioSources: []
+  m_DirectAudioVolumes: []
   m_Url: 
-  m_EnabledAudioTracks: 01
-  m_DirectAudioMutes: 00
-  m_ControlledAudioTrackCount: 1
+  m_EnabledAudioTracks: 
+  m_DirectAudioMutes: 
+  m_ControlledAudioTrackCount: 0
   m_PlayOnAwake: 1
   m_SkipOnDrop: 1
   m_Looping: 1
@@ -284,11 +282,11 @@ MonoBehaviour:
   CameraVideo: {fileID: 1229959126}
   FlipShader: {fileID: 7200000, guid: 05590041234a65f4d80b919592402619, type: 3}
   FlipAndSplitShader: {fileID: 7200000, guid: e8500eccc23d5814c91615ffb8457470, type: 3}
-  VideoDownScaling: 1
+  VideoDownScaling: 2
   ActiveRefine: 1
   ActiveBlur: 1
-  BlurRadius: 5
-  Iteration: 3
+  BlurRadius: 1
+  Iteration: 2
   BlurDownScaling: 1
   flip: 1
   ARBackgroundMat: {fileID: 2100000, guid: 55f46c331ed9e054e8353492055be746, type: 2}

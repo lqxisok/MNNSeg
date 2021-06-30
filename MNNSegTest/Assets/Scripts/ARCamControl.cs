@@ -117,6 +117,31 @@ public class ARCamControl : MonoBehaviour {
             {
                 m_commandBuffer.SetGlobalTexture("_SegTex", m_segmentResultTex);
             }
+            else if (!ActiveBlur)
+            {
+                int downSamplingResultTexID = Shader.PropertyToID("_DownSamplingResultTex");
+                m_commandBuffer.GetTemporaryRT(downSamplingResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
+
+                DownSampling.Setup(m_commandBuffer, m_texture, m_segmentResultTex, downSamplingResultTexID);
+
+                m_commandBuffer.SetGlobalTexture("_SegTex", downSamplingResultTexID);
+                
+                m_commandBuffer.ReleaseTemporaryRT(downSamplingResultTexID);
+            }
+            else if (!ActiveRefine)
+            {
+                int blurResultTexID = Shader.PropertyToID("_BlurResultTexID");
+                m_commandBuffer.GetTemporaryRT(blurResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
+                int cameraTexID = Shader.PropertyToID("_CameraTexID");
+                m_commandBuffer.GetTemporaryRT(cameraTexID, m_width, m_height, 0, FilterMode.Bilinear);
+
+                m_commandBuffer.Blit(m_texture, cameraTexID);
+                DualKawaseBlur.Setup(m_width, m_height, m_commandBuffer, cameraTexID, blurResultTexID, BlurRadius, Iteration, BlurDownScaling);
+                m_commandBuffer.SetGlobalTexture("_SegTex", blurResultTexID);
+                
+                m_commandBuffer.ReleaseTemporaryRT(blurResultTexID);
+                m_commandBuffer.ReleaseTemporaryRT(cameraTexID);
+            }
             else
             {
                 int downSamplingResultTexID = Shader.PropertyToID("_DownSamplingResultTex");
@@ -158,5 +183,11 @@ public class ARCamControl : MonoBehaviour {
         m_texture.Apply();
 
         SegmentToolkit.Segment(m_texture, m_segmentResultTex, flip);
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (m_initialized)
+            SegmentToolkit.ReleaseSession();
     }
 }

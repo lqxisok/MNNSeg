@@ -38,6 +38,7 @@ public class CommandBufferTestControl : MonoBehaviour {
     private RenderTexture m_segmentResultTex;
 
     private RenderTexture m_cameraRT;
+    private RenderTexture m_cameraResizeRT;
 
     void Start()
     {
@@ -48,6 +49,10 @@ public class CommandBufferTestControl : MonoBehaviour {
         {
             m_width = m_cameraRT.width / VideoDownScaling;
             m_height = m_cameraRT.height / VideoDownScaling;
+
+            m_cameraResizeRT = new RenderTexture(m_width, m_height, 0);
+            m_cameraResizeRT.enableRandomWrite = true;
+            m_cameraResizeRT.Create();
 
             m_segmentResultTex = new RenderTexture(m_width, m_height, 0);
             m_segmentResultTex.enableRandomWrite = true;
@@ -61,6 +66,31 @@ public class CommandBufferTestControl : MonoBehaviour {
             if (!ActiveRefine && !ActiveBlur)
             {
                 m_commandBuffer.SetGlobalTexture("_SegTex", m_segmentResultTex);
+            }
+            else if (!ActiveBlur)
+            {
+                int downSamplingResultTexID = Shader.PropertyToID("_DownSamplingResultTex");
+                m_commandBuffer.GetTemporaryRT(downSamplingResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
+
+                DownSampling.Setup(m_commandBuffer, m_cameraRT, m_segmentResultTex, downSamplingResultTexID);
+
+                m_commandBuffer.SetGlobalTexture("_SegTex", downSamplingResultTexID);
+                
+                m_commandBuffer.ReleaseTemporaryRT(downSamplingResultTexID);
+            }
+            else if (!ActiveRefine)
+            {
+                int blurResultTexID = Shader.PropertyToID("_BlurResultTexID");
+                m_commandBuffer.GetTemporaryRT(blurResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
+                int segmentResultTexID = Shader.PropertyToID("_SegmentResultTexID");
+                m_commandBuffer.GetTemporaryRT(segmentResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
+
+                m_commandBuffer.Blit(m_segmentResultTex, segmentResultTexID);
+                DualKawaseBlur.Setup(m_width, m_height, m_commandBuffer, segmentResultTexID, blurResultTexID, BlurRadius, Iteration, BlurDownScaling);
+                m_commandBuffer.SetGlobalTexture("_SegTex", blurResultTexID);
+                
+                m_commandBuffer.ReleaseTemporaryRT(blurResultTexID);
+                m_commandBuffer.ReleaseTemporaryRT(segmentResultTexID);
             }
             else
             {
@@ -92,7 +122,8 @@ public class CommandBufferTestControl : MonoBehaviour {
 
     void Update()
     {
-        SegmentToolkit.Segment(m_cameraRT, m_segmentResultTex, flip);
+        Graphics.Blit(m_cameraRT, m_cameraResizeRT);
+        SegmentToolkit.Segment(m_cameraResizeRT, m_segmentResultTex, flip);
     }
 
     private void OnApplicationQuit()

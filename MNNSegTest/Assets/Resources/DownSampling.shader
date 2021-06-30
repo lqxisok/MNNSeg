@@ -13,7 +13,7 @@ Shader "Hidden/DownSampling"
     {
         _MainTex("Texture", 2D) = "white" {}
         _RGBTex("Texture", 2D) = "white" {}
-		_AverageTex("Texture", 2D) = "white" {}
+		// _AverageTex("Texture", 2D) = "white" {}
     }
 
 	HLSLINCLUDE
@@ -104,7 +104,7 @@ Shader "Hidden/DownSampling"
 		half segment = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).x; // segment [0, 1]
 		half confidence = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv).y; // confidence
 
-		half flag = ColorDistance(col, average.xyz) < 0.3;
+		half flag = ColorDistance(col, average.xyz) < 0.5;
 		half bconf = confidence > 0.98;
 
 		half result = 0;
@@ -121,7 +121,7 @@ Shader "Hidden/DownSampling"
 		if (segment == 1 && flag == 1) result = 1;
 		else if (segment == 1 && flag == 0 && bconf == 0) result = confidence;
 		else if (segment == 1 && flag == 0 && bconf == 1) result = 1;
-		else if (segment == 0 && flag == 1 && bconf == 0) result = (1 - confidence * 0.2);
+		else if (segment == 0 && flag == 1 && bconf == 0) result = 1 - confidence * 0.2;
 
 		return half4(result, 0, 0, 1);
 		// return half4(average.xyz, 1.0);
