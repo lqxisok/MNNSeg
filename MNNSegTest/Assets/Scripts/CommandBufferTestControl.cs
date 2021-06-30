@@ -74,6 +74,9 @@ public class CommandBufferTestControl : MonoBehaviour {
 
                 DualKawaseBlur.Setup(m_width, m_height, m_commandBuffer, downSamplingResultTexID, blurResultTexID, BlurRadius, Iteration, BlurDownScaling);
                 m_commandBuffer.SetGlobalTexture("_SegTex", blurResultTexID);
+                
+                m_commandBuffer.ReleaseTemporaryRT(downSamplingResultTexID);
+                m_commandBuffer.ReleaseTemporaryRT(blurResultTexID);
             }
 
             CommandBuffer m_commandBuffer1 = new CommandBuffer();

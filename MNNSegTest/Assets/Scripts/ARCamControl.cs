@@ -98,8 +98,8 @@ public class ARCamControl : MonoBehaviour {
             // Convert the image to format, flipping the image across the Y axis.
             // We can also get a sub rectangle, but we'll get the full image here.
             var format = TextureFormat.RGB24;
-            m_conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.MirrorY);
-            m_conversionParams.inputRect = new RectInt(0, 0, m_width, m_height);
+            m_conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.MirrorX);
+            m_conversionParams.outputDimensions = new Vector2Int(m_width, m_height);
 
             m_texture = new Texture2D(m_width, m_height, format, false);
             
@@ -113,16 +113,26 @@ public class ARCamControl : MonoBehaviour {
             // Command buffer setup
             m_commandBuffer = new CommandBuffer();
             
-            int downSamplingResultTexID = Shader.PropertyToID("_DownSamplingResultTex");
-            m_commandBuffer.GetTemporaryRT(downSamplingResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
-            
-            DownSampling.Setup(m_commandBuffer, m_texture, m_segmentResultTex, downSamplingResultTexID);
-            
-            int blurResultTexID = Shader.PropertyToID("_BlurResultTexID");
-            m_commandBuffer.GetTemporaryRT(blurResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
+            if (!ActiveRefine && !ActiveBlur)
+            {
+                m_commandBuffer.SetGlobalTexture("_SegTex", m_segmentResultTex);
+            }
+            else
+            {
+                int downSamplingResultTexID = Shader.PropertyToID("_DownSamplingResultTex");
+                m_commandBuffer.GetTemporaryRT(downSamplingResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
+                
+                DownSampling.Setup(m_commandBuffer, m_texture, m_segmentResultTex, downSamplingResultTexID);
+                
+                int blurResultTexID = Shader.PropertyToID("_BlurResultTexID");
+                m_commandBuffer.GetTemporaryRT(blurResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
 
-            DualKawaseBlur.Setup(m_width, m_height, m_commandBuffer, downSamplingResultTexID, blurResultTexID, BlurRadius, Iteration, BlurDownScaling);
-            m_commandBuffer.SetGlobalTexture("_SegTex", blurResultTexID);
+                DualKawaseBlur.Setup(m_width, m_height, m_commandBuffer, downSamplingResultTexID, blurResultTexID, BlurRadius, Iteration, BlurDownScaling);
+                m_commandBuffer.SetGlobalTexture("_SegTex", blurResultTexID);
+
+                m_commandBuffer.ReleaseTemporaryRT(downSamplingResultTexID);
+                m_commandBuffer.ReleaseTemporaryRT(blurResultTexID);
+            }
 
             GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterSkybox, m_commandBuffer);
 
@@ -149,5 +159,4 @@ public class ARCamControl : MonoBehaviour {
 
         SegmentToolkit.Segment(m_texture, m_segmentResultTex, flip);
     }
-
 }

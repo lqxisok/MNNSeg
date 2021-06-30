@@ -4,7 +4,7 @@
 	{
     	_textureY ("TextureY", 2D) = "white" {}
         _textureCbCr ("TextureCbCr", 2D) = "black" {}
-        _SegTex ("SegTex", 2D) = "black" {}
+        // _SegTex ("SegTex", 2D) = "white" {}
 	}
 	SubShader
 	{
@@ -78,7 +78,7 @@
                 videoColor.xyz = GammaToLinearSpace(videoColor.xyz);
 #endif // !UNITY_COLORSPACE_GAMMA
 
-                videoColor.w = tex2D(_SegTex, texcoord).r;
+                videoColor.w = 1.0 - tex2D(_SegTex, texcoord).r * 0.8;
                 // videoColor.w = 1.0;
 
                 return videoColor;

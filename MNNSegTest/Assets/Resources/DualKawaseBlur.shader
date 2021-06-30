@@ -81,7 +81,8 @@ Shader "Hidden/DualKawaseBlur"
 		sum += SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv23.xy);
 		sum += SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv23.zw);
 		
-		return sum * 0.125;
+		// return sum * 0.125;
+		return sum * 0.2;
 	}
 	
 	
