@@ -211,7 +211,7 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1229959125}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 72aae44e8c62ded47b08bb2796d07ca4, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: bcdcc6d638a5739499269f8f0dd209b7, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 0}
@@ -280,16 +280,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CameraVideo: {fileID: 1229959126}
+  ARBackgroundMat: {fileID: 2100000, guid: 55f46c331ed9e054e8353492055be746, type: 2}
+  VideoDownScaling: 2
+  flip: 1
   FlipShader: {fileID: 7200000, guid: 05590041234a65f4d80b919592402619, type: 3}
   FlipAndSplitShader: {fileID: 7200000, guid: e8500eccc23d5814c91615ffb8457470, type: 3}
-  VideoDownScaling: 2
-  ActiveRefine: 1
-  ActiveBlur: 1
+  ActiveRefine: 0
+  RefineShader: {fileID: 4800000, guid: 93a3436910b9f694090198a8bded0115, type: 3}
+  DistanceThreshold: 0.3
+  ConfidenceThreshold: 0.98
+  ActiveBlur: 0
+  BlurShader: {fileID: 4800000, guid: 6d87107d07af132409031d1a9c2bd70d, type: 3}
   BlurRadius: 1
-  Iteration: 2
+  Iteration: 1
   BlurDownScaling: 1
-  flip: 1
-  ARBackgroundMat: {fileID: 2100000, guid: 55f46c331ed9e054e8353492055be746, type: 2}
+  ActiveGuideFilter: 1
+  MeanFilterShader: {fileID: 4800000, guid: 769977693e8b96f4db0c93a43d0190af, type: 3}
+  TexDotShader: {fileID: 4800000, guid: deaf1415787d20743bd870284c3d5ad8, type: 3}
+  GuideFilterShader: {fileID: 4800000, guid: b9fadef5d68cf5942901611ababa5954, type: 3}
+  GuideFilterRadius: 20
+  GuideFilterRegularization: 0.01
+  m_segmentResultTex: {fileID: 0}
 --- !u!20 &1408060219
 Camera:
   m_ObjectHideFlags: 0

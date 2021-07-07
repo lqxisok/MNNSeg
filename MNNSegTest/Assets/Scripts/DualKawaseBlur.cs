@@ -9,10 +9,12 @@ public static class DualKawaseBlur
         internal int up;
     }
 
-    public static void Setup(int _width, int _height, CommandBuffer _cb, int _inputTexID, int _outputTexID, float _blurRadius, int _iteration, float _downScaling)
+    public static void Setup(CommandBuffer _cb,
+                            Shader shader,
+                            int _width, int _height,
+                            int _inputTexID, int _outputTexID,
+                            float _blurRadius, int _iteration, float _downScaling)
     {
-        Shader shader = Shader.Find("Hidden/DualKawaseBlur");
-
         Material material = new Material(shader);
         material.hideFlags = HideFlags.HideAndDontSave;
         material.SetFloat(Shader.PropertyToID("_Offset"), _blurRadius);

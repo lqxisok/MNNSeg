@@ -58,11 +58,18 @@ public static class SegmentToolkit
         return initializeModel(path, 4, _width, _height, 3) == 0;
     }
 
-    public static void Segment(RenderTexture inputTex, RenderTexture outputTex, bool flip = true)
+    public static void Segment(RenderTexture inputTex, RenderTexture outputTex, bool flip)
     {
-        FlipImage(inputTex, outputTex, flipShader, flip);
+        if (flip)
+        {
+            FlipImage(inputTex, outputTex, flipShader);
+            RenderTexture.active = outputTex;
+        }
+        else
+        {
+            RenderTexture.active = inputTex;
+        }
 
-        RenderTexture.active = outputTex;
         flipTex.ReadPixels(rect, 0, 0);
         flipTex.Apply(false);
         RenderTexture.active = null;
@@ -75,10 +82,13 @@ public static class SegmentToolkit
         retTex.LoadRawTextureData(retArray);
         retTex.Apply(false);
 
-        FlipImage(retTex, outputTex, flipAndSplitShader, flip);
+        if (flip)
+            FlipImage(retTex, outputTex, flipAndSplitShader);
+        else
+            Graphics.Blit(retTex, outputTex);
     }
 
-    public static void Segment(Texture2D inputTex, RenderTexture outputTex, bool flip = true)
+    public static void Segment(Texture2D inputTex, RenderTexture outputTex, bool flip)
     {
         processImage(inputTex.GetRawTextureData());
         runSession();
@@ -87,10 +97,10 @@ public static class SegmentToolkit
         retTex.LoadRawTextureData(retArray);
         retTex.Apply(false);
 
-        FlipImage(retTex, outputTex, flipAndSplitShader, flip);
+        FlipImage(retTex, outputTex, flipAndSplitShader);
     }
 
-    private static void FlipImage(Texture inputTex, RenderTexture outputTex, ComputeShader shader, bool flip)
+    private static void FlipImage(Texture inputTex, RenderTexture outputTex, ComputeShader shader)
     {
         int numThread = 8;
         int kernelHandle = shader.FindKernel("CSMain");
@@ -99,7 +109,7 @@ public static class SegmentToolkit
         shader.SetInt("y", inputTex.height);
         shader.SetTexture(kernelHandle, "Result", outputTex);
         shader.SetTexture(kernelHandle, "ImageInput", inputTex);
-        shader.Dispatch(kernelHandle, inputTex.width / numThread , inputTex.height / numThread, 1);
+        shader.Dispatch(kernelHandle, inputTex.width / numThread + 1, inputTex.height / numThread + 1, 1);
     }
 
     public static void ReleaseSession()

@@ -3,15 +3,18 @@ using UnityEngine.Rendering;
 
 public static class DownSampling
 {
-    public static void Setup(CommandBuffer _cb, Texture _videoTex, Texture _segTex, int _downSamplingResultTexID)
+    public static void Setup(CommandBuffer _cb,
+                            Shader shader,
+                            Texture _videoTex, Texture _segTex,
+                            int _downSamplingResultTexID, float _distanceThreshold, float _confidenceThreshold)
     {
-        Shader shader = Shader.Find("Hidden/DownSampling");
-
         Material material = new Material(shader);
         material.hideFlags = HideFlags.HideAndDontSave;
         
         material.SetFloat(Shader.PropertyToID("_Offset"), 1.0f);
         material.SetTexture(Shader.PropertyToID("_RGBTex"), _videoTex);
+        material.SetFloat(Shader.PropertyToID("_DistanceThreshold"), _distanceThreshold);
+        material.SetFloat(Shader.PropertyToID("_ConfidenceThreshold"), _confidenceThreshold);
 
         int tw = _segTex.width;
         int th = _segTex.height;
