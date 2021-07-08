@@ -13,12 +13,12 @@ int main(int argc, char **argv){
 
     // Process the image from a (void *) pointer
     int width, height, channel;
-    string path = "../test.jpg";
-    string out_path = "../testa.png";
+    string path = "../test3.jpg";
+    string out_path = "../test3a.png";
     auto inputImage = stbi_load(path.c_str(), &width, &height, &channel, 3);
 
     //string path = getcwd(NULL, 0);
-    if (initializeModel("../pcnet.mnn", 4, width, height, channel) == 0)
+    if (initializeModel("../pcnet_skyfinder.mnn", 4, width, height, channel) == 0)
     {
         processImage(inputImage);
         runSession();
