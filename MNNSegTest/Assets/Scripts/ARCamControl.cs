@@ -80,9 +80,13 @@ public class ARCamControl : MonoBehaviour {
 
     private bool m_initialized = false;
 
-    private XRCameraImageConversionParams m_conversionParams;
+    private XRCameraImageConversionParams m_conversionParamsForSeg;
 
-    private Texture2D m_texture;
+    private XRCameraImageConversionParams m_conversionParamsOriginal;
+
+    private Texture2D m_textureForSeg;
+
+    private Texture2D m_textureOriginal;
     
     private CommandBuffer m_commandBuffer;
 
@@ -139,10 +143,12 @@ public class ARCamControl : MonoBehaviour {
             // Convert the image to format, flipping the image across the Y axis.
             // We can also get a sub rectangle, but we'll get the full image here.
             var format = TextureFormat.RGB24;
-            m_conversionParams = new XRCameraImageConversionParams(image, format, CameraImageTransformation.MirrorX);
-            m_conversionParams.outputDimensions = new Vector2Int(m_width, m_height);
+            m_conversionParamsOriginal = new XRCameraImageConversionParams(image, format, CameraImageTransformation.None);
+            m_textureOriginal = new Texture2D(image.width, image.height, format, false);
 
-            m_texture = new Texture2D(m_width, m_height, format, false);
+            m_conversionParamsForSeg = new XRCameraImageConversionParams(image, format, CameraImageTransformation.MirrorX);
+            m_conversionParamsForSeg.outputDimensions = new Vector2Int(m_width, m_height);
+            m_textureForSeg = new Texture2D(m_width, m_height, format, false);
             
             m_segmentResultTex = new RenderTexture(m_width, m_height, 0);
             m_segmentResultTex.enableRandomWrite = true;
@@ -162,7 +168,7 @@ public class ARCamControl : MonoBehaviour {
             {
                 m_texIDList.Add(new RenderTexture(m_width, m_height, 0));
                 currentID ++;
-                DownSampling.Setup(m_commandBuffer, RefineShader, m_texture, m_texIDList[currentID - 1], m_texIDList[currentID], DistanceThreshold, ConfidenceThreshold);
+                DownSampling.Setup(m_commandBuffer, RefineShader, m_textureOriginal, m_texIDList[currentID - 1], m_texIDList[currentID], DistanceThreshold, ConfidenceThreshold);
             }
 
             if (ActiveBlur)
@@ -187,8 +193,10 @@ public class ARCamControl : MonoBehaviour {
                                 MeanFilterShader, TexDotShader, GuideFilterShader,
                                 m_width, m_height,
                                 GuideFilterRadius, GuideFilterRegularization,
-                                m_texIDList[currentID - 1], m_texture, m_texIDList[currentID]);
+                                m_texIDList[currentID - 1], m_textureOriginal, m_texIDList[currentID]);
             }
+
+            m_commandBuffer.SetGlobalTexture("_SegTex", m_texIDList[currentID]);
 
             cam.AddCommandBuffer(CameraEvent.AfterSkybox, m_commandBuffer);
 
@@ -198,10 +206,12 @@ public class ARCamControl : MonoBehaviour {
 
         // Texture2D allows us write directly to the raw texture data
         // This allows us to do the conversion in-place without making any copies.
-        var rawTextureData = m_texture.GetRawTextureData<byte>();
+        var rawTextureDataForSeg = m_textureForSeg.GetRawTextureData<byte>();
+        var rawTextureDataOriginal = m_textureOriginal.GetRawTextureData<byte>();
         try
         {
-            image.Convert(m_conversionParams, new IntPtr(rawTextureData.GetUnsafePtr()), rawTextureData.Length);
+            image.Convert(m_conversionParamsForSeg, new IntPtr(rawTextureDataForSeg.GetUnsafePtr()), rawTextureDataForSeg.Length);
+            image.Convert(m_conversionParamsOriginal, new IntPtr(rawTextureDataOriginal.GetUnsafePtr()), rawTextureDataOriginal.Length);
         }
         finally
         {
@@ -211,9 +221,10 @@ public class ARCamControl : MonoBehaviour {
         }
 
         // Apply the updated texture data to our texture
-        m_texture.Apply();
+        m_textureForSeg.Apply();
+        m_textureOriginal.Apply();
 
-        SegmentToolkit.Segment(m_texture, m_segmentResultTex, flip);
+        SegmentToolkit.Segment(m_textureForSeg, m_segmentResultTex, flip);
 
         // Update camera homography matrix
         Quaternion delta = transform.rotation * Quaternion.Inverse(m_OldOriention);
@@ -223,10 +234,12 @@ public class ARCamControl : MonoBehaviour {
 
     private void OnApplicationQuit()
     {
-        foreach (var item in m_texIDList)
-            item.Release();
-
         if (m_initialized)
+        {
+            foreach (var item in m_texIDList)
+                item.Release();
+
             SegmentToolkit.ReleaseSession();
+        }
     }
 }

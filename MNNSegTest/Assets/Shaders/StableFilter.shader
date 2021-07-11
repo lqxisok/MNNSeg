@@ -51,8 +51,9 @@
 
         fixed4 frag1 (v2f i) : SV_Target
         {
-            fixed4 ret = tex2D(_MainTex, i.uv).rrrr;
-            return ret;
+            fixed4 col = tex2D(_MainTex, i.uv);
+            fixed ret = (col.r + col.g + col.b + col.a) > 3;
+            return fixed4(ret, 0, 0, 1);
         }
 
     ENDCG

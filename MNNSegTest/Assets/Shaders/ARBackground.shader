@@ -78,7 +78,7 @@
                 videoColor.xyz = GammaToLinearSpace(videoColor.xyz);
 #endif // !UNITY_COLORSPACE_GAMMA
 
-                videoColor.w = 1.0 - tex2D(_SegTex, texcoord).r * 0.8;
+                videoColor.w = 1.0 - tex2D(_SegTex, texcoord).r;
                 // videoColor.w = 1.0;
 
                 return videoColor;

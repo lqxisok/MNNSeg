@@ -69,7 +69,7 @@ public class CommandBufferTestControl : MonoBehaviour {
     
     private CommandBuffer m_commandBuffer;
 
-    public RenderTexture m_segmentResultTex;
+    private RenderTexture m_segmentResultTex;
 
     private RenderTexture m_cameraRT;
     private RenderTexture m_cameraResizeRT;
@@ -167,11 +167,13 @@ public class CommandBufferTestControl : MonoBehaviour {
 
     private void OnApplicationQuit()
     {
-        foreach (var item in m_texIDList)
-            item.Release();
-
         if (m_initialized)
+        {
+            foreach (var item in m_texIDList)
+                item.Release();
+
             SegmentToolkit.ReleaseSession();
+        }
     }
 
 }
