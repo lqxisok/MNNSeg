@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
@@ -22,7 +23,7 @@ public class ARCamControl : MonoBehaviour {
 
     public Material ARBackgroundMat;
 
-    [Range(1, 4)]
+    [Range(1, 8)]
     public int CameraDownScaling = 2;
     
     [Space(20)]
@@ -58,6 +59,11 @@ public class ARCamControl : MonoBehaviour {
     public float BlurDownScaling = 1.0f;
 
     [Space(20)]
+    public bool ActiveStableFilter = true;
+
+    public Shader StableFilterShader;
+
+    [Space(20)]
     public bool ActiveGuideFilter = true;
 
     public Shader MeanFilterShader;
@@ -81,6 +87,12 @@ public class ARCamControl : MonoBehaviour {
     private CommandBuffer m_commandBuffer;
 
     private RenderTexture m_segmentResultTex;
+
+    private List<RenderTexture> m_texIDList;
+
+    private Quaternion m_OldOriention;
+
+    private Camera cam;
 	
     void OnEnable()
     {
@@ -119,6 +131,9 @@ public class ARCamControl : MonoBehaviour {
 
         if (!m_initialized)
         {
+            m_OldOriention = transform.rotation;
+            cam = GetComponent<Camera>();
+
             m_width = image.width / CameraDownScaling;
             m_height = image.height / CameraDownScaling;
             // Convert the image to format, flipping the image across the Y axis.
@@ -139,67 +154,43 @@ public class ARCamControl : MonoBehaviour {
             // Command buffer setup
             m_commandBuffer = new CommandBuffer();
             
+            m_texIDList = new List<RenderTexture>();
+            int currentID = 0;
+            m_texIDList.Add(m_segmentResultTex);
+
+            if (ActiveRefine)
+            {
+                m_texIDList.Add(new RenderTexture(m_width, m_height, 0));
+                currentID ++;
+                DownSampling.Setup(m_commandBuffer, RefineShader, m_texture, m_texIDList[currentID - 1], m_texIDList[currentID], DistanceThreshold, ConfidenceThreshold);
+            }
+
+            if (ActiveBlur)
+            {
+                m_texIDList.Add(new RenderTexture(m_width, m_height, 0));
+                currentID ++;
+                DualKawaseBlur.Setup(m_commandBuffer, BlurShader, m_texIDList[currentID - 1], m_texIDList[currentID], BlurRadius, Iteration, BlurDownScaling);
+            }
+
+            if (ActiveStableFilter)
+            {
+                m_texIDList.Add(new RenderTexture(m_width, m_height, 0));
+                currentID ++;
+                StableFilter.Setup(m_commandBuffer, StableFilterShader, m_texIDList[currentID - 1], m_texIDList[currentID]);
+            }
+
             if (ActiveGuideFilter)
             {
-                int guideFilterResultTexID = Shader.PropertyToID("_GuideFilterResultTex");
-                m_commandBuffer.GetTemporaryRT(guideFilterResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
-
+                m_texIDList.Add(new RenderTexture(m_width, m_height, 0));
+                currentID ++;
                 GuideFilter.Setup(m_commandBuffer,
                                 MeanFilterShader, TexDotShader, GuideFilterShader,
                                 m_width, m_height,
                                 GuideFilterRadius, GuideFilterRegularization,
-                                m_segmentResultTex, m_texture, guideFilterResultTexID);
-                
-                m_commandBuffer.SetGlobalTexture("_SegTex", guideFilterResultTexID);
-                m_commandBuffer.ReleaseTemporaryRT(guideFilterResultTexID);
-            }
-            else if (!ActiveRefine && !ActiveBlur)
-            {
-                m_commandBuffer.SetGlobalTexture("_SegTex", m_segmentResultTex);
-            }
-            else if (!ActiveBlur)
-            {
-                int downSamplingResultTexID = Shader.PropertyToID("_DownSamplingResultTex");
-                m_commandBuffer.GetTemporaryRT(downSamplingResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
-
-                DownSampling.Setup(m_commandBuffer, RefineShader, m_texture, m_segmentResultTex, downSamplingResultTexID, DistanceThreshold, ConfidenceThreshold);
-
-                m_commandBuffer.SetGlobalTexture("_SegTex", downSamplingResultTexID);
-                
-                m_commandBuffer.ReleaseTemporaryRT(downSamplingResultTexID);
-            }
-            else if (!ActiveRefine)
-            {
-                int blurResultTexID = Shader.PropertyToID("_BlurResultTexID");
-                m_commandBuffer.GetTemporaryRT(blurResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
-                int cameraTexID = Shader.PropertyToID("_CameraTexID");
-                m_commandBuffer.GetTemporaryRT(cameraTexID, m_width, m_height, 0, FilterMode.Bilinear);
-
-                m_commandBuffer.Blit(m_texture, cameraTexID);
-                DualKawaseBlur.Setup(m_commandBuffer, BlurShader, m_width, m_height, cameraTexID, blurResultTexID, BlurRadius, Iteration, BlurDownScaling);
-                m_commandBuffer.SetGlobalTexture("_SegTex", blurResultTexID);
-                
-                m_commandBuffer.ReleaseTemporaryRT(blurResultTexID);
-                m_commandBuffer.ReleaseTemporaryRT(cameraTexID);
-            }
-            else
-            {
-                int downSamplingResultTexID = Shader.PropertyToID("_DownSamplingResultTex");
-                m_commandBuffer.GetTemporaryRT(downSamplingResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
-                
-                DownSampling.Setup(m_commandBuffer, RefineShader, m_texture, m_segmentResultTex, downSamplingResultTexID, DistanceThreshold, ConfidenceThreshold);
-                
-                int blurResultTexID = Shader.PropertyToID("_BlurResultTexID");
-                m_commandBuffer.GetTemporaryRT(blurResultTexID, m_width, m_height, 0, FilterMode.Bilinear);
-
-                DualKawaseBlur.Setup(m_commandBuffer, BlurShader, m_width, m_height, downSamplingResultTexID, blurResultTexID, BlurRadius, Iteration, BlurDownScaling);
-                m_commandBuffer.SetGlobalTexture("_SegTex", blurResultTexID);
-
-                m_commandBuffer.ReleaseTemporaryRT(downSamplingResultTexID);
-                m_commandBuffer.ReleaseTemporaryRT(blurResultTexID);
+                                m_texIDList[currentID - 1], m_texture, m_texIDList[currentID]);
             }
 
-            GetComponent<Camera>().AddCommandBuffer(CameraEvent.AfterSkybox, m_commandBuffer);
+            cam.AddCommandBuffer(CameraEvent.AfterSkybox, m_commandBuffer);
 
             m_initialized = true;
         }
@@ -223,10 +214,18 @@ public class ARCamControl : MonoBehaviour {
         m_texture.Apply();
 
         SegmentToolkit.Segment(m_texture, m_segmentResultTex, flip);
+
+        // Update camera homography matrix
+        Quaternion delta = transform.rotation * Quaternion.Inverse(m_OldOriention);
+        m_commandBuffer.SetGlobalMatrix("_HomographyMatrix", (cam.projectionMatrix.inverse * Matrix4x4.Rotate(delta) * cam.projectionMatrix).transpose);
+        m_OldOriention = transform.rotation;
     }
 
     private void OnApplicationQuit()
     {
+        foreach (var item in m_texIDList)
+            item.Release();
+
         if (m_initialized)
             SegmentToolkit.ReleaseSession();
     }

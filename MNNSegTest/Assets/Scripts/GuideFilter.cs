@@ -20,13 +20,13 @@ public static class GuideFilter
         _cb.Blit(source, dest, meanFilterMat);
     }
 
-    private static void Dot(CommandBuffer _cb, Texture source1,Texture source2, int dest)
+    private static void Dot(CommandBuffer _cb, Texture source1, Texture source2, int dest)
     {
         _cb.SetGlobalTexture("_SubTex", source2);
         _cb.Blit(source1, dest, texDotMat);
     }
 
-    private static void Dot(CommandBuffer _cb, int source1,int source2, int dest)
+    private static void Dot(CommandBuffer _cb, int source1, int source2, int dest)
     {
         _cb.SetGlobalTexture("_SubTex", source2);
         _cb.Blit(source1, dest, texDotMat);
@@ -38,7 +38,7 @@ public static class GuideFilter
                     Shader _guideFilterShader, 
                     int _width, int _height,
                     int _radius, float _regularization,
-                    Texture _sourceTex, Texture _guideTex, int _destTexID)
+                    Texture _sourceTex, Texture _guideTex, Texture _destTexID)
     {
         // init material
         meanFilterMat = new Material(_meanFilterShader);
@@ -88,7 +88,7 @@ public static class GuideFilter
         // 0 ===
         Mean(_cb, _guideTex, meanI);
         Mean(_cb, _sourceTex, meanP);
-        Dot(_cb, _guideTex, _guideTex,dotII);
+        Dot(_cb, _guideTex, _guideTex, dotII);
         Dot(_cb, _guideTex, _sourceTex, dotIP);
         Mean(_cb, dotII, corrI); 
         Mean(_cb, dotIP, corrIP);  

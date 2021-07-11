@@ -11,16 +11,15 @@ public static class DualKawaseBlur
 
     public static void Setup(CommandBuffer _cb,
                             Shader shader,
-                            int _width, int _height,
-                            int _inputTexID, int _outputTexID,
+                            Texture _sourceTex, Texture _destTex,
                             float _blurRadius, int _iteration, float _downScaling)
     {
         Material material = new Material(shader);
         material.hideFlags = HideFlags.HideAndDontSave;
         material.SetFloat(Shader.PropertyToID("_Offset"), _blurRadius);
 
-        int tw = (int)(_width / _downScaling);
-        int th = (int)(_height / _downScaling);
+        int tw = (int)(_sourceTex.width / _downScaling);
+        int th = (int)(_sourceTex.height / _downScaling);
 
         Level[] m_pyramid = new Level[_iteration];
         for (int i = 0; i < _iteration; i++)
@@ -33,14 +32,18 @@ public static class DualKawaseBlur
         }
 
         // Downsample
-        int lastDown = _inputTexID;
+        int lastDown = 0;
         for (int i = 0; i < _iteration; i++)
         {
             int mipDown = m_pyramid[i].down;
             int mipUp = m_pyramid[i].up;
             _cb.GetTemporaryRT(mipDown, tw, th, 0, FilterMode.Bilinear);
             _cb.GetTemporaryRT(mipUp, tw, th, 0, FilterMode.Bilinear);
-            _cb.Blit(lastDown, mipDown, material, 0);
+
+            if (i == 0)
+                _cb.Blit(_sourceTex, mipDown, material, 0);
+            else
+                _cb.Blit(lastDown, mipDown, material, 0);
 
             lastDown = mipDown;
             tw = Mathf.Max(tw / 2, 1);
@@ -59,7 +62,7 @@ public static class DualKawaseBlur
 
         // Cleanup
         // Render blurred texture in blend pass
-        _cb.Blit(lastUp, _outputTexID, material, 1);
+        _cb.Blit(lastUp, _destTex, material, 1);
 
         for (int i = 0; i < _iteration; i++)
         {

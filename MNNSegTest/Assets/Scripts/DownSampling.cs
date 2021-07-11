@@ -6,7 +6,7 @@ public static class DownSampling
     public static void Setup(CommandBuffer _cb,
                             Shader shader,
                             Texture _videoTex, Texture _segTex,
-                            int _downSamplingResultTexID, float _distanceThreshold, float _confidenceThreshold)
+                            Texture _destTex, float _distanceThreshold, float _confidenceThreshold)
     {
         Material material = new Material(shader);
         material.hideFlags = HideFlags.HideAndDontSave;
@@ -46,7 +46,7 @@ public static class DownSampling
 
         // Refine sky segment result
         _cb.SetGlobalTexture("_AverageTex", lastDown);
-        _cb.Blit(_segTex, _downSamplingResultTexID, material, 2);
+        _cb.Blit(_segTex, _destTex, material, 2);
 
         // Cleanup
         for (int i = 0; i < iteration; i++)

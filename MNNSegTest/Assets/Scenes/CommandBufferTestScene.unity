@@ -287,13 +287,15 @@ MonoBehaviour:
   FlipAndSplitShader: {fileID: 7200000, guid: e8500eccc23d5814c91615ffb8457470, type: 3}
   ActiveRefine: 0
   RefineShader: {fileID: 4800000, guid: 93a3436910b9f694090198a8bded0115, type: 3}
-  DistanceThreshold: 0.3
-  ConfidenceThreshold: 0.98
+  DistanceThreshold: 0.1
+  ConfidenceThreshold: 0.9
   ActiveBlur: 0
   BlurShader: {fileID: 4800000, guid: 6d87107d07af132409031d1a9c2bd70d, type: 3}
   BlurRadius: 1
   Iteration: 1
   BlurDownScaling: 1
+  ActiveStableFilter: 1
+  StableFilterShader: {fileID: 4800000, guid: 0e7821f1f13a8544594045b0bb31c82d, type: 3}
   ActiveGuideFilter: 1
   MeanFilterShader: {fileID: 4800000, guid: 769977693e8b96f4db0c93a43d0190af, type: 3}
   TexDotShader: {fileID: 4800000, guid: deaf1415787d20743bd870284c3d5ad8, type: 3}

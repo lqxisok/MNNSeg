@@ -54,7 +54,7 @@ public static class SegmentToolkit
 
         rect = new Rect(0, 0, _width, _height);
 
-        string path = Application.streamingAssetsPath + "/pcnet_softmax.mnn";
+        string path = Application.streamingAssetsPath + "/pcnet_skyfinder.mnn";
         return initializeModel(path, 4, _width, _height, 3) == 0;
     }
 
